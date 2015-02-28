@@ -37,7 +37,7 @@ OBJS := $(OBJS:.asm=.o)
 OBJS := $(addprefix ./$(OUTDIR)/,$(OBJS))
 
 $(OUTDIR)/$(TARGET): $(OBJS) $(LINKER_SCRIPT)
-	$(LD) $(INCS) $(LDFLAGS) --output_file="$@" $(OBJS) $(CMDS)
+	$(LD) $(INCS) $(LDFLAGS) -e=code_start --output_file="$@" $(OBJS) $(CMDS)
 
 all:	$(OUTDIRS) $(OUTDIR)/$(TARGET) $(OUTDIR)/$(TARGET)
 clean:

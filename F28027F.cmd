@@ -93,6 +93,7 @@ PAGE 1 :   /* Data Memory */
    RAMM0_M1    : origin = 0x000000, length = 0x000800     /* on-chip RAM block M0 + M1 */
    P_DRAML0    : origin = 0x008000, length = 0x001000     /* on-chip PRAM and DRAM blocks L0 */
    FLASHA_D    : origin = 0x3F4000, length = 0x007F80     /* on-chip FLASH A, B, C and D */
+ //  PIE_IVT		: origin = 0x0D00, length = 0x200		/* PIE interrupt vector table area */
 }
 
 /* Allocate sections to memory blocks.
@@ -124,7 +125,13 @@ SECTIONS
                          LOAD_SIZE(_RamfuncsLoadSize),
                          RUN_START(_RamfuncsRunStart),
                          PAGE = 1
-
+/*	initonly			: LOAD = FLASHA_D,
+                         RUN = PIE_IVT,
+                         LOAD_START(_InitOnlyLoadStart),
+                         LOAD_SIZE(_InitOnlyLoadSize),
+                         RUN_START(_InitOnlyRunStart),
+                         PAGE = 1
+*/
    csmpasswds          : > CSM_PWL_P0   PAGE = 0
    csm_rsvd            : > CSM_RSVD     PAGE = 0
 

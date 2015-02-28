@@ -151,11 +151,14 @@
 	</CustomFolders>
 	<Files AutoFolders="DirectoryView">
 		<Folder Name="../">
+			<F N="../codestartbranch.asm"/>
 			<F N="../F28027F.cmd"/>
 			<F N="../main.c"/>
 			<F
 				N="../Makefile"
 				Type="Makefile"/>
+			<F N="../pie.c"/>
+			<F N="../pie.h"/>
 			<F N="../tms320f2802xx.h"/>
 		</Folder>
 	</Files>

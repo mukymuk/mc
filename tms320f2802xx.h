@@ -221,6 +221,33 @@ extern cregister volatile unsigned int IER;
 #define PCLKCR1_EPWM1ENCLK_DISABLE			0   		// The ePWM1 module is not clocked. (default)
 #define PCLKCR1_EPWM1ENCLK_ENABLE			(1<<0)  	// The ePWM1 module is clocked by the system clock (SYSCLKOUT).
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///	CPU INTERRUPT
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#define CPU_INT1          (1 << 0)
+#define CPU_INT2          (1 << 1)
+#define CPU_INT3          (1 << 2)
+#define CPU_INT4          (1 << 3)
+#define CPU_INT5          (1 << 4)
+#define CPU_INT6          (1 << 5)
+#define CPU_INT7          (1 << 6)
+#define CPU_INT8          (1 << 7)
+#define CPU_INT9          (1 << 8)
+#define CPU_INT10         (1 << 9)
+#define CPU_INT11         (1 << 10)
+#define CPU_INT12         (1 << 11)
+#define CPU_INT13         (1 << 12)
+#define CPU_INT14         (1 << 13)
+#define CPU_DLOGINT       (1 << 14)
+#define CPU_RTOSINT       (1 << 15)
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// PIE
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 #define PIECTRL		(*((volatile uint16_t*)0x000CE0))
 
 #define PIECTRL_PIEVECT_MASK				0xFFFE		// These bits indicate the address within the PIE vector table from which the vector was fetched. The
@@ -308,6 +335,27 @@ extern cregister volatile unsigned int IER;
 #define PIEIFR_INT3					(1<<2)
 #define PIEIFR_INT2					(1<<1)
 #define PIEIFR_INT1					(1<<0)
+
+#define PIE_IVT	((PISR*)0x0D00)
+
+#define	PIEACK_ACK_ALL 	0x0FFF				// resets all PIE
+#define PIEACK_ACK(i)	(1<<((x)-1))		// Each bit in PIEACK refers to a specific PIE group. Bit 0 refers to interrupts in PIE group 1 that are
+											// MUXed into INT1 up to Bit 11, which refers to PIE group 12 which is MUXed into CPU IN T12
+											// 
+											// If a bit reads as a 0, it indicates that the PIE can send an interrupt from the respective group to the
+											// CPU. Writes of 0 are ignored.  
+											// 
+											// Reading a 1 indicates if an interrupt from the respective group has been 
+											// sent to the CPU and all other interrupts from the group are currently blocked.
+											// 
+											// Writing a 1 to the respective interrupt bit clears the bit and enables the PIE block to drive a pulse into 
+											// the CPU interrupt input if an interrupt is pending for that group.
+
+
+
+#define PIEIER(x)	RA(((x)-1)*2+0xCE2)		// INT(1-12) Group Enable Register
+#define PIEIFR(x)	RA(((x)-1))*2+0xCE3)	// INT(1-12) Group Flag Register
+
 
 #define GPAMUX1	(*((volatile uint16_t*)0x006F86))
 
@@ -613,9 +661,107 @@ extern cregister volatile unsigned int IER;
 												// directly to the active register, that is the register actively controlling the hardware.
 												// • In either mode, the active and shadow registers share the same memory map address.
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///	32-BIT CPU Timers 0/1/2
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #define TBCTR(i)	RA((i)*0x40+0x6804)			// Time Base Counter Register
 
 #define TBPRD(i)	RA((i)*0x40+0x6805)			// Time Base Period Register
 
+
+#define TIMERTIM(i)		RA((i)*8+0xC00)			// CPU-Timer (0-2) Counter Register
+#define TIMERTIMH(i)	RA((i)*8+0xC01)			// CPU-Timer (0-2) Counter Register High 
+#define TIMERPRD(i)		RA((i)*8+0xC02)			// CPU-Timer (0-2) Period Register
+												// CPU-Timer Period Registers (PRDH:PRD): The PRD register holds the low 16 bits of the 32-bit period. The
+												// PRDH register holds the high 16 bits of the 32-bit period. When the TIMH:TIM decrements to zero, the
+												// TIMH:TIM register is reloaded with the period value contained in the PRDH:PRD registers, at the start of
+												// the next timer input clock cycle (the output of the prescaler). The PRDH:PRD contents are also loaded into
+												// the TIMH:TIM when you set the timer reload bit (TRB) in the Timer Control Register (TCR).
+
+#define SET_TIMER_PERIOD(t,p)	TIMERPRD(t) = ((uint16_t)((uint32_t)(p))); TIMERPRDH(t) = ((uint16_t)((uint32_t)(p)>>16))
+
+#define TIMERPRDH(i)	RA((i)*8+0xC03)			// CPU-Timer (0-2) Period Register High
+												// CPU-Timer Period Registers (PRDH:PRD): The PRD register holds the low 16 bits of the 32-bit period. The
+												// PRDH register holds the high 16 bits of the 32-bit period. When the TIMH:TIM decrements to zero, the
+												// TIMH:TIM register is reloaded with the period value contained in the PRDH:PRD registers, at the start of
+												// the next timer input clock cycle (the output of the prescaler). The PRDH:PRD contents are also loaded into
+												// the TIMH:TIM when you set the timer reload bit (TRB) in the Timer Control Register (TCR).
+
+#define TIMERTPR(i)		RA((i)*8+0xC06)			// CPU-Timer (0-2) Prescale Register
+
+#define TIMER_TPR_PSC(v)	(((v)&0xFF)<<8)		// CPU-Timer Prescale Counter. These bits hold the current prescale count for the timer. For every timer clock
+												// source cycle that the PSCH:PSC value is greater than 0, the PSCH:PSC decrements by one. One timer clock
+												// (output of the timer prescaler) cycle after the PSCH:PSC reaches 0, the PSCH:PSC is loaded with the contents
+												// of the TDDRH:TDDR, and the timer counter register (TIMH:TIM) decrements by one. The PSCH:PSC is also
+												// reloaded whenever the timer reload bit (TRB) is set by software. The PSCH:PSC can be checked by reading
+												// the register, but it cannot be set directly. It must get its value from the timer divide-down register
+												// (TDDRH:TDDR). At reset, the PSCH:PSC is set to 0.
+												// 
+#define TIMER_TPR_TDDR(v)	((v)&0xFF)			// CPU-Timer Divide-Down. Every (TDDRH:TDDR + 1) timer clock source cycles, the timer counter register
+												// (TIMH:TIM) decrements by one. At reset, the TDDRH:TDDR bits are cleared to 0. To increase the overall timer
+												// count by an integer factor, write this factor minus one to the TDDRH:TDDR bits. When the prescaler counter
+												// (PSCH:PSC) value is 0, one timer clock source cycle later, the contents of the TDDRH:TDDR reload the
+												// PSCH:PSC, and the TIMH:TIM decrements by one. TDDRH:TDDR also reloads the PSCH:PSC whenever the
+												// timer reload bit (TRB) is set by software.
+
+#define TIMERTPRH(i)	RA((i)*8+0xC07)			// CPU-Timer (0-2) Control Register High
+
+#define TIMER_TPRH_PSCH(v)	(((v)&0xFF)<<8)		// CPU-Timer Prescale Counter. These bits hold the current prescale count for the timer. For every timer clock
+												// source cycle that the PSCH:PSC value is greater than 0, the PSCH:PSC decrements by one. One timer clock
+												// (output of the timer prescaler) cycle after the PSCH:PSC reaches 0, the PSCH:PSC is loaded with the contents
+												// of the TDDRH:TDDR, and the timer counter register (TIMH:TIM) decrements by one. The PSCH:PSC is also
+												// reloaded whenever the timer reload bit (TRB) is set by software. The PSCH:PSC can be checked by reading
+												// the register, but it cannot be set directly. It must get its value from the timer divide-down register
+												// (TDDRH:TDDR). At reset, the PSCH:PSC is set to 0.
+
+#define TIMER_TPRH_TDDRH(v)	((v)&0xFF)			// CPU-Timer Divide-Down. Every (TDDRH:TDDR + 1) timer clock source cycles, the timer counter register
+												// (TIMH:TIM) decrements by one. At reset, the TDDRH:TDDR bits are cleared to 0. To increase the overall timer
+												// count by an integer factor, write this factor minus one to the TDDRH:TDDR bits. When the prescaler counter
+												// (PSCH:PSC) value is 0, one timer clock source cycle later, the contents of the TDDRH:TDDR reload the
+												// PSCH:PSC, and the TIMH:TIM decrements by one. TDDRH:TDDR also reloads the PSCH:PSC whenever the
+												// timer reload bit (TRB) is set by software.
+
+#define SET_TIMER_PRESCALE(t,p)		TIMERTPR(t) = TIMER_TPR_TDDR(p); TIMERTPRH(t) = TIMER_TPRH_TDDRH((p)>>8)
+
+
+#define TIMERTCR(i)		RA((i)*8+0xC04)			// CPU-Timer (0-2) Control Register
+												//
+#define TIMERTCR_TIF_MASK		(1<<15)			// CPU-Timer Interrupt Flag
+#define TIMERTCR_TIF_NOT_ZERO	0				// The CPU-Timer has not decremented to zero.
+												// Writes of 0 are ignored.
+#define TIMERTCR_TIF_ZERO		(1<<15)			// This flag gets set when the CPU-timer decrements to zero.
+												// Writing a 1 to this bit clears the flag.
+												// 
+#define TIMERTCR_TIE_MASK		(1<<14)			// CPU-Timer Interrupt Enable.
+#define TIMERTCR_TIE_DISABLE	0				// The CPU-Timer interrupt is disabled.
+#define TIMERTCR_TIE_ENABLE		(1<<14)			// The CPU-Timer interrupt is enabled. If the timer decrements to zero, and TIE is set, the
+												// timer asserts its interrupt request.
+												// 
+#define TIMERTCR_FREE_SOFT_MASK		(3<<10)		// CPU-Timer Emulation Modes: These bits are special emulation bits that determine the
+												// SOFT state of the timer when a breakpoint is encountered in the high-level language
+												// debugger. If the FREE bit is set to 1, then, upon a software breakpoint, the timer
+												// continues to run (that is, free runs). In this case, SOFT is a don't care. But if FREE is 0,
+												// then SOFT takes effect. In this case, if SOFT = 0, the timer halts the next time the
+												// TIMH:TIM decrements. If the SOFT bit is 1, then the timer halts when the TIMH:TIM
+												// has decremented to zero.
+												//
+#define TIMERTCR_FREE_SOFT_HARDSTOP	0			// Stop after the next decrement of the TIMH:TIM (hard stop)
+#define TIMERTCR_FREE_SOFT_SOFTSTOP	(1<<10)		// Stop after the TIMH:TIM decrements to 0 (soft stop)
+												// In the SOFT STOP mode, the timer generates an interrupt before shutting down (since
+												// reaching 0 is the interrupt causing condition).
+#define TIMERTCR_FREE_SOFT_FREERUN	(2<<10)		// Free run
+												//
+#define TIMERTCR_TRB_MASK		(1<<5)			// CPU-Timer Reload bit.
+#define TIMERTCR_TRB_RELOAD		(1<<5)			// When you write a 1 to TRB, the TIMH:TIM is loaded with the value in the PRDH:PRD,
+												// and the prescaler counter (PSCH:PSC) is loaded with the value in the timer dividedown
+												// register (TDDRH:TDDR).
+												// 
+#define TIMERTCR_TSS_MASK		(1<<4)			// CPU-Timer stop status bit. TSS is a 1-bit flag that stops or starts the CPU-timer.
+#define TIMERTCR_TSS_RUNNING	0				// Reads of 0 indicate the CPU-timer is running.  
+												// To start or restart the CPU-timer, set TSS to 0. At reset, TSS is cleared to 0 and the
+												// CPU-timer immediately starts.
+#define TIMERTCR_TSS_STOPPED	(1<<4)			// Reads of 1 indicate that the CPU-timer is stopped.
+												// To stop the CPU-timer, set TSS to 1
 
 

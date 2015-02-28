@@ -1,10 +1,15 @@
 #include <stdint.h>
 #include "tms320f2802xx.h"
+#include "pie.h"
 
 #ifdef FLASH
 extern uint16_t RamfuncsLoadStart;
 extern uint16_t RamfuncsLoadSize;
 extern uint16_t RamfuncsRunStart;
+extern uint16_t InitOnlyLoadStart;
+extern uint16_t InitOnlyLoadSize;
+extern uint16_t InitOnlyRunStart;
+
 //#pragma CODE_SECTION(test,"ramfuncs")
 #pragma CODE_SECTION(flash_config,"ramfuncs")
 #endif
@@ -17,34 +22,9 @@ static void flash_config( void )
 	while( delay-- );
 }
 
-void test(void)
-{
-	while( 1 )
-	{
-		GPATOGGLE = GPIO_MASK(0);
-		GPATOGGLE = GPIO_MASK(0);
-		GPATOGGLE = GPIO_MASK(1);
-		GPATOGGLE = GPIO_MASK(1);
-		GPATOGGLE = GPIO_MASK(2);
-		GPATOGGLE = GPIO_MASK(2);
-		GPATOGGLE = GPIO_MASK(3);
-		GPATOGGLE = GPIO_MASK(3);
-		GPATOGGLE = GPIO_MASK(0);
-		GPATOGGLE = GPIO_MASK(0);
-		GPATOGGLE = GPIO_MASK(1);
-		GPATOGGLE = GPIO_MASK(1);
-		GPATOGGLE = GPIO_MASK(2);
-		GPATOGGLE = GPIO_MASK(2);
-		GPATOGGLE = GPIO_MASK(3);
-		GPATOGGLE = GPIO_MASK(3);
-	}
-}
-
-
 int main(void)
 {
 	EALLOW();
-	WDCR = WDCR_WDDIS_DISABLE | WDCR_WDCHK_KEY;
 	DINT();
 	IER = 0;
 	IFR = 0;
@@ -59,8 +39,8 @@ int main(void)
 				CLKCTL_INTOSC2OFF_OFF |
 				CLKCTL_INTOSC1HALTI_ON |
 				CLKCTL_INTOSC1OFF_ON |
-				CLKCTL_TMR2CLKPRESCALE_DIV2 |	
-				CLKCTL_TMR2CLKSRCSEL_INTOSC1 |
+				CLKCTL_TMR2CLKPRESCALE_DIV1 |	
+				CLKCTL_TMR2CLKSRCSEL_SYSCLKOUT |
 				CLKCTL_WDCLKSRCSEL_INTOSC1 |
 				CLKCTL_OSCCLKSRC2SEL_INTOSC2 |
 				CLKCTL_OSCCLKSRCSEL_INTOSC1;
@@ -84,12 +64,30 @@ int main(void)
 	GPADIR = (GPADIR & (GPIO_MASK(0)|GPIO_MASK(1)|GPIO_MASK(2)|GPIO_MASK(3))) | 
 			(GPIO_OUTPUT(0)|GPIO_OUTPUT(1)|GPIO_OUTPUT(2)|GPIO_OUTPUT(3));
 
+	GPASET = GPIO_MASK(0)|GPIO_MASK(1)|GPIO_MASK(2)|GPIO_MASK(3);
+
 #ifdef FLASH
-	memcpy(&RamfuncsRunStart, &RamfuncsLoadStart, (int)&RamfuncsLoadSize);
+	memcpy(&RamfuncsRunStart, &RamfuncsLoadStart, (int16_t)&RamfuncsLoadSize);
+//	memcpy(&InitOnlyRunStart, &InitOnlyLoadStart, (int16_t)&InitOnlyLoadSize);
 #endif
 
-
 	flash_config();
+	pie_init();
+
+	SET_TIMER_PRESCALE(2,60000);	// timer2 = 1ms tick rate
+	SET_TIMER_PERIOD(2,100);	// 10Hz
+	TIMERTCR(2) = TIMERTCR_TIE_ENABLE | TIMERTCR_FREE_SOFT_HARDSTOP | TIMERTCR_TRB_RELOAD | TIMERTCR_TSS_RUNNING;
+
+	pie_init();
+	IER = CPU_INT14;
+	IFR = 0;
+	EINT();
+	ERTM();
 	EDIS();
-	test();
+
+	while( 1 )
+	{
+	}
 }
+
+
