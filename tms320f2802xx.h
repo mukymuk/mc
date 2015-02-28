@@ -592,7 +592,7 @@ extern cregister volatile unsigned int IER;
 												// directly to the active register, that is the register actively controlling the hardware.
 												// • In either mode, the active and shadow registers share the same memory map address.
 
-#define CMPA(i)	RA((i)*0x40+0x680A)				// The value in the active CMPB register is continuously compared to the time-base counter (TBCTR). When
+#define CMPB(i)	RA((i)*0x40+0x680A)				// The value in the active CMPB register is continuously compared to the time-base counter (TBCTR). When
 												// the values are equal, the counter-compare module generates a "time-base counter equal to counter
 												// compare B" event. This event is sent to the action-qualifier where it is qualified and converted it into one
 												// or more actions. These actions can be applied to either the EPWMxA or the EPWMxB output depending

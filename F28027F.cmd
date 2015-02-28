@@ -121,7 +121,7 @@ SECTIONS
    ramfuncs            : LOAD = FLASHA_D,
                          RUN = P_DRAML0,
                          LOAD_START(_RamfuncsLoadStart),
-                         LOAD_END(_RamfuncsLoadEnd),
+                         LOAD_SIZE(_RamfuncsLoadSize),
                          RUN_START(_RamfuncsRunStart),
                          PAGE = 1
 

@@ -1,22 +1,10 @@
 #include <stdint.h>
 #include "tms320f2802xx.h"
 
-
 #ifdef FLASH
-// Used for running BackGround in flash, and ISR in RAM
-extern uint16_t * RamfuncsLoadStart, * RamfuncsLoadEnd, * RamfuncsRunStart;
-
-static void memCopy(uint16_t * srcStartAddr, uint16_t * srcEndAddr, uint16_t * dstAddr)
-{
-	while( srcStartAddr <= srcEndAddr )
-	{
-		*dstAddr++ = *srcStartAddr++;
-	}
-}
-
-#endif
-
-#ifdef FLASH
+extern uint16_t RamfuncsLoadStart;
+extern uint16_t RamfuncsLoadSize;
+extern uint16_t RamfuncsRunStart;
 //#pragma CODE_SECTION(test,"ramfuncs")
 #pragma CODE_SECTION(flash_config,"ramfuncs")
 #endif
@@ -27,7 +15,6 @@ static void flash_config( void )
 	FBANKWAIT = FBANKWAIT_PAGEWAIT(2)|FBANKWAIT_RANDWAIT(2);
 	FOPT = FOPT_ENPIPE_ENABLE;
 	while( delay-- );
-
 }
 
 void test(void)
@@ -52,6 +39,7 @@ void test(void)
 		GPATOGGLE = GPIO_MASK(3);
 	}
 }
+
 
 int main(void)
 {
@@ -97,11 +85,10 @@ int main(void)
 			(GPIO_OUTPUT(0)|GPIO_OUTPUT(1)|GPIO_OUTPUT(2)|GPIO_OUTPUT(3));
 
 #ifdef FLASH
-	// Copy time critical code and Flash setup code to RAM
-	// The RamfuncsLoadStart, RamfuncsLoadEnd, and RamfuncsRunStart
-	// symbols are created by the linker. Refer to the linker files.
-	memCopy((uint16_t *)&RamfuncsLoadStart, (uint16_t *)&RamfuncsLoadEnd, (uint16_t *)&RamfuncsRunStart);
+	memcpy(&RamfuncsRunStart, &RamfuncsLoadStart, (int)&RamfuncsLoadSize);
 #endif
+
+
 	flash_config();
 	EDIS();
 	test();

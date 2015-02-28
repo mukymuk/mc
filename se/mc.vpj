@@ -151,8 +151,6 @@
 	</CustomFolders>
 	<Files AutoFolders="DirectoryView">
 		<Folder Name="../">
-			<F N="../CodeStartBranch.asm"/>
-			<F N="../env"/>
 			<F N="../F28027F.cmd"/>
 			<F N="../main.c"/>
 			<F

@@ -1,13 +1,12 @@
 TOOLCHAIN:=c:/ti/ccsv6/tools/compiler/c2000_6.2.11
 
-BSP=launchxl-f28027
-HAL=f2802x
 OUTDIR=build/${CFG}
 TARGET=mc.out
-LINKER_SCRIPT=F28027F.cmd
 
 CC = ${TOOLCHAIN}/bin/cl2000.exe
 LD = ${CC}
+
+CMDS = F28027F.cmd
 
 MKDIR := .
 
@@ -18,8 +17,6 @@ INCS=-I.
 
 SRCS := $(wildcard *.c)
 SRCS := $(SRCS) $(wildcard *.asm)
-
-#include hal/sources
 
 OUTDIRS=$(addprefix $(OUTDIR)/, $(MKDIR))
 
@@ -39,11 +36,8 @@ OBJS := $(SRCS:.c=.o)
 OBJS := $(OBJS:.asm=.o)
 OBJS := $(addprefix ./$(OUTDIR)/,$(OBJS))
 
-
-
-
 $(OUTDIR)/$(TARGET): $(OBJS) $(LINKER_SCRIPT)
-	$(LD) $(LDFLAGS) --output_file="$@" $(OBJS) $(LINKER_SCRIPT)
+	$(LD) $(INCS) $(LDFLAGS) --output_file="$@" $(OBJS) $(CMDS)
 
 all:	$(OUTDIRS) $(OUTDIR)/$(TARGET) $(OUTDIR)/$(TARGET)
 clean:
