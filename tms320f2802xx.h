@@ -481,194 +481,10 @@ extern cregister volatile unsigned int IER;
 #define FBANKWAIT_RANDWAIT(c)		(((c)<<0)&FBANKWAIT_RANDWAIT_MASK)
 
 #define RA(x)	(*((volatile uint16_t*)(x)))
-
-#define TBCTL(i)	RA((i)*0x40+0x6800)
-
-#define TBCTL_FREE_SOFT_MASK		(3<<14)		// Emulation Mode Bits. These bits select the behavior of the ePWM time-base counter during
-												// emulation events
-#define TBCTL_FREE_SOFT_TIMEBASE	0   		// Stop after the next time-base counter increment or decrement
-#define TBCTL_FREE_SOFT_CYCLE		(1<<14) 	// Stop when counter completes a whole cycle:
-#define TBCTL_FREE_SOFT_FREE_RUN	(2<<14) 	// Free run
-
-#define TBCTL_PHSDIR_MASK			(1<<13) 	// Phase Direction Bit.
-												// This bit is only used when the time-base counter is configured in the up-down-count mode. The
-												// PHSDIR bit indicates the direction the time-base counter (TBCTR) will count after a synchronization
-												// event occurs and a new phase value is loaded from the phase (TBPHS) register. This is
-												// irrespective of the direction of the counter before the synchronization event..
-												// In the up-count and down-count modes this bit is ignored.
-												// 
-#define TBCTL_PHSDIR_COUNT_DOWN		(0)			// Count down after the synchronization event.
-#define TBCTL_PHSDIR_COUNT_UP		(1<<13)		// Count up after the synchronization event.
-
-#define TBCTL_CLKDIV_MASK			(7<<10)		// Time-base Clock Prescale Bits
-												// These bits determine part of the time-base clock prescale value.
-												// TBCLK = SYSCLKOUT / (HSPCLKDIV × CLKDIV)
-												// 
-#define TBCTL_CLKDIV_1				(0<<10)		// /1 (default on reset)
-#define TBCTL_CLKDIV_2				(1<<10)
-#define TBCTL_CLKDIV_4				(2<<10)
-#define TBCTL_CLKDIV_8				(3<<10)
-#define TBCTL_CLKDIV_16				(4<<10)
-#define TBCTL_CLKDIV_32				(5<<10)
-#define TBCTL_CLKDIV_64				(6<<10)
-#define TBCTL_CLKDIV_128			(7<<10)
 												
-#define TBCTL_HSPCLKDIV_MASK		(7<<7)		// High Speed Time-base Clock Prescale Bits
-												// These bits determine part of the time-base clock prescale value.
-												// TBCLK = SYSCLKOUT / (HSPCLKDIV × CLKDIV)
-												// This divisor emulates the HSPCLK in the TMS320x281x system as used on the Event Manager
-												// (EV) peripheral.
-
-#define TBCTL_HSPCLKDIV_1			(0<<7)	
-#define TBCTL_HSPCLKDIV_2			(1<<7)		// /2 (default on reset)
-#define TBCTL_HSPCLKDIV_4			(2<<7)
-#define TBCTL_HSPCLKDIV_6			(3<<7)
-#define TBCTL_HSPCLKDIV_8			(4<<7)
-#define TBCTL_HSPCLKDIV_10			(5<<7)
-#define TBCTL_HSPCLKDIV_12			(6<<7)
-#define TBCTL_HSPCLKDIV_14			(7<<7)
-
-#define TBCTL_SWFSYNC_MASK			(1<<6)		// Software Forced Synchronization Pulse
-
-#define TBCTL_SWFSYNC_FORCE			(1<<6)		// Writing a 0 has no effect and reads always return a 0.
-												// Writing a 1 forces a one-time synchronization pulse to be generated.
-												// This event is ORed with the EPWMxSYNCI input of the ePWM module.
-												// SWFSYNC is valid (operates) only when EPWMxSYNCI is selected by SYNCOSEL = 00.
-
-
-#define TBCTL_SYNCOSEL_MASK			(3<<4)		// Synchronization Output Select. These bits select the source of the EPWMxSYNCO signal.
-
-#define TBCTL_SYNCOSEL_EPWMXSYNC	0			// EPWMxSYNC
-#define TBCTL_SYNCOSEL_CTR_ZERO		(1<<4)		// CTR = zero: Time-base counter equal to zero (TBCTR = 0x0000)
-#define TBCTL_SYNCOSEL_CTR_CMPB		(2<<4)  	// CTR = CMPB : Time-base counter equal to counter-compare B (TBCTR = CMPB)
-#define TBCTL_SYNCOSEL_DISABLE		(3<<4)  	// Disable EPWMxSYNCO signal
-
-
-#define TBCTL_PRDLD_MASK			(1<<3)		// Active Period Register Load From Shadow Register Select
-
-#define TBCTL_PRDLD_SHADOW			(0)			// The period register (TBPRD) is loaded from its shadow register when the time-base counter,
-												// TBCTR, is equal to zero.
-												// A write or read to the TBPRD register accesses the shadow register.
-#define TBCTL_PRDLD_IMMEDIATE		(1<<3)		// Load the TBPRD register immediately without using a shadow register.
-												// A write or read to the TBPRD register directly accesses the active register.
-
-#define TBCTL_PHSEN_MASK			(1<<2)		// Counter Register Load From Phase Register Enable
-
-
-#define TBCTL_PHSEN_NOLOAD			0			// Do not load the time-base counter (TBCTR) from the time-base phase register (TBPHS)
-#define TBCTL_PHSEN_LOAD			(1<<2)		// Load the time-base counter with the phase register when an EPWMxSYNCI input signal occurs or
-												// when a software synchronization is forced by the SWFSYNC bit, or when a digital compare sync
-												// event occurs.
-
-#define TBCTL_CTRMODE_MASK			(3<<0)		// Counter Mode
-												// The time-base counter mode is normally configured once and not changed during normal operation.
-												// If you change the mode of the counter, the change will take effect at the next TBCLK edge and the
-												// current counter value shall increment or decrement from the value before the mode change.
-#define TBCTL_CTRMODE_UP_COUNT		0			// Up-count mode
-#define TBCTL_CTRMODE_DOWN_COUNT1	1   		// Down-count mode
-#define TBCTL_CTRMODE_UP_DOWN_COUNT	2   		// Up-down-count mode
-#define TBCTL_CTRMODE_STOP_FREEZE	3   		// Stop-freeze counter operation (default on reset)
-
-#define TBSTS(i)	RA((i)*0x40+0x6801)			// Time Base Status Register
-
-#define TBSTS_CTRMAX_MASK			(1<<2)		// Time-Base Counter Max Latched Status Bit
-
-#define TBSTS_CTRMAX_NONE			(0<<2)		// Reading a 0 indicates the time-base counter never reached its maximum value. Writing a 0 will
-												// have no effect.
-#define TBSTS_CTRMAX_MAX			(1<<2)  	// Reading a 1 on this bit indicates that the time-base counter reached the max value 0xFFFF. Writing
-												// a 1 to this bit will clear the latched event.
-
-#define TBSTS_SYNCI_MASK			(1<<1)		// Input Synchronization Latched Status Bit
-
-#define TBSTS_SYNCI_NONE			0			// Writing a 0 will have no effect. Reading a 0 indicates no external synchronization event has
-												// occurred.
-#define TBSTS_SYNCI_SYNC			(1<<1)  	// Reading a 1 on this bit indicates that an external synchronization event has occurred
-												// (EPWMxSYNCI). Writing a 1 to this bit will clear the latched event.
-
-#define TBSTS_CTRDIR_MASK			(1<<0)		// Time-Base Counter Direction Status Bit. At reset, the counter is frozen; therefore, this bit has no
-												// meaning. To make this bit meaningful, you must first set the appropriate mode via TBCTL[CTRMODE].
-#define TBSTS_CTRDIR_DOWN			0   		// Time-Base Counter is currently counting down.
-#define TBSTS_CTRDIR_UP				1   		// Time-Base Counter is currently counting up.
-
-#define HRPCTL(i)	RA((i)*0x40+0x6828)			// High resolution Period Control Register
-												// Note: This bit and the TBCTL[PHSEN] bit must be set to 1 when high resolution period control is
-												// enabled for up-down count mode even if TBPHSHR = 0x0000.
-												// 
-#define HRPCTL_TBPHSHRLOADE_MASK	(1<<2)		// TBPHSHR Load Enable
-												// This bit allows you to synchronize ePWM modules with a high-resolution phase on a SYNCIN,
-												// TBCTL[SWFSYNC], or digital compare event. This allows for multiple ePWM modules operating
-												// at the same frequency to be phase aligned with high-resolution.
-												// 
-#define	HRPCTL_TBPHSHRLOADE_DISABLE	0			// Disables synchronization of high-resolution phase on a SYNCIN, TBCTL[SWFSYNC] or digital
-												// compare event.
-												// 
-#define	HRPCTL_TBPHSHRLOADE_ENABLE	(1<<2)		// Synchronize the high-resolution phase on a SYNCIN, TBCTL[SWFSYNC] or digital comparator
-												// synchronization event. The phase is synchronized using the contents of the high-resolution phase
-												// TBPHSHR register.
-												// The TBCTL[PHSEN] bit which enables the loading of the TBCTR register with TBPHS register
-												// value on a SYNCIN, or TBCTL[SWFSYNC] event works independently. However, users need to
-												// enable this bit also if they want to control phase in conjunction with the high-resolution period
-												// feature.
-
-#define HRPCTL_HRPE_MASK			1			// High Resolution Period Enable Bit
-												// When high-resolution period is enabled, TBCTL[CTRMODE] = 0,1 (down-count mode) is not
-												// supported.
-												// 
-#define HRPCTL_HRPE_DISABLE			0   		// High resolution period feature disabled. In this mode the ePWM behaves as a Type 0 ePWM.
-												//
-#define HRPCTL_HRPE_ENABLE			1   		// High resolution period enabled. In this mode the HRPWM module can control high-resolution of
-												// both the duty and frequency.
-
-#define CMPA(i)	RA((i)*0x40+0x6808) 			// The value in the active CMPA register is continuously compared to the time-base counter (TBCTR). When
-												// the values are equal, the counter-compare module generates a "time-base counter equal to counter
-												// compare A" event. This event is sent to the action-qualifier where it is qualified and converted it into one
-												// or more actions. These actions can be applied to either the EPWMxA or the EPWMxB output depending
-												// on the configuration of the AQCTLA and AQCTLB registers. The actions that can be defined in the
-												// AQCTLA and AQCTLB registers include:
-												// • Do nothing; the event is ignored.
-												// • Clear: Pull the EPWMxA and/or EPWMxB signal low
-												// • Set: Pull the EPWMxA and/or EPWMxB signal high
-												// • Toggle the EPWMxA and/or EPWMxB signal
-												// Shadowing of this register is enabled and disabled by the CMPCTL[SHDWAMODE] bit. By default this
-												// register is shadowed.
-												// • If CMPCTL[SHDWAMODE] = 0, then the shadow is enabled and any write or read will automatically
-												// go to the shadow register. In this case, the CMPCTL[LOADAMODE] bit field determines which event
-												// will load the active register from the shadow register.
-												// • Before a write, the CMPCTL[SHDWAFULL] bit can be read to determine if the shadow register is
-												// currently full.
-												// • If CMPCTL[SHDWAMODE] = 1, then the shadow register is disabled and any write or read will go
-												// directly to the active register, that is the register actively controlling the hardware.
-												// • In either mode, the active and shadow registers share the same memory map address.
-
-#define CMPB(i)	RA((i)*0x40+0x680A)				// The value in the active CMPB register is continuously compared to the time-base counter (TBCTR). When
-												// the values are equal, the counter-compare module generates a "time-base counter equal to counter
-												// compare B" event. This event is sent to the action-qualifier where it is qualified and converted it into one
-												// or more actions. These actions can be applied to either the EPWMxA or the EPWMxB output depending
-												// on the configuration of the AQCTLA and AQCTLB registers. The actions that can be defined in the
-												// AQCTLA and AQCTLB registers include:
-												// • Do nothing. event is ignored.
-												// • Clear: Pull the EPWMxA and/or EPWMxB signal low
-												// • Set: Pull the EPWMxA and/or EPWMxB signal high
-												// • Toggle the EPWMxA and/or EPWMxB signal
-												// Shadowing of this register is enabled and disabled by the CMPCTL[SHDWBMODE] bit. By default this
-												// register is shadowed.
-												// • If CMPCTL[SHDWBMODE] = 0, then the shadow is enabled and any write or read will automatically
-												// go to the shadow register. In this case, the CMPCTL[LOADBMODE] bit field determines which event
-												// will load the active register from the shadow register:
-												// • Before a write, the CMPCTL[SHDWBFULL] bit can be read to determine if the shadow register is
-												// currently full.
-												// • If CMPCTL[SHDWBMODE] = 1, then the shadow register is disabled and any write or read will go
-												// directly to the active register, that is the register actively controlling the hardware.
-												// • In either mode, the active and shadow registers share the same memory map address.
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///	32-BIT CPU Timers 0/1/2
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-#define TBCTR(i)	RA((i)*0x40+0x6804)			// Time Base Counter Register
-
-#define TBPRD(i)	RA((i)*0x40+0x6805)			// Time Base Period Register
-
 
 #define TIMERTIM(i)		RA((i)*8+0xC00)			// CPU-Timer (0-2) Counter Register
 #define TIMERTIMH(i)	RA((i)*8+0xC01)			// CPU-Timer (0-2) Counter Register High 
@@ -763,5 +579,234 @@ extern cregister volatile unsigned int IER;
 												// CPU-timer immediately starts.
 #define TIMERTCR_TSS_STOPPED	(1<<4)			// Reads of 1 indicate that the CPU-timer is stopped.
 												// To stop the CPU-timer, set TSS to 1
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///	PWM
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#define TBCTL(i)		RA(((i)-1)*0x40+0x6800)		// Time Base Control Register
+													//
+#define TBCTL_FREE_SOFT_MASK		(3<<14)			// Emulation Mode Bits. These bits select the behavior of the ePWM time-base counter during
+													// emulation events
+#define TBCTL_FREE_SOFT_TIMEBASE	0   			// Stop after the next time-base counter increment or decrement
+#define TBCTL_FREE_SOFT_CYCLE		(1<<14) 		// Stop when counter completes a whole cycle:
+#define TBCTL_FREE_SOFT_FREE_RUN	(2<<14) 		// Free run
+
+#define TBCTL_PHSDIR_MASK			(1<<13) 		// Phase Direction Bit.
+													// This bit is only used when the time-base counter is configured in the up-down-count mode. The
+													// PHSDIR bit indicates the direction the time-base counter (TBCTR) will count after a synchronization
+													// event occurs and a new phase value is loaded from the phase (TBPHS) register. This is
+													// irrespective of the direction of the counter before the synchronization event..
+													// In the up-count and down-count modes this bit is ignored.
+													// 
+#define TBCTL_PHSDIR_COUNT_DOWN		(0)				// Count down after the synchronization event.
+#define TBCTL_PHSDIR_COUNT_UP		(1<<13)			// Count up after the synchronization event.
+
+#define TBCTL_CLKDIV_MASK			(7<<10)			// Time-base Clock Prescale Bits
+													// These bits determine part of the time-base clock prescale value.
+													// TBCLK = SYSCLKOUT / (HSPCLKDIV × CLKDIV)
+													// 
+#define TBCTL_CLKDIV_1				(0<<10)			// /1 (default on reset)
+#define TBCTL_CLKDIV_2				(1<<10)
+#define TBCTL_CLKDIV_4				(2<<10)
+#define TBCTL_CLKDIV_8				(3<<10)
+#define TBCTL_CLKDIV_16				(4<<10)
+#define TBCTL_CLKDIV_32				(5<<10)
+#define TBCTL_CLKDIV_64				(6<<10)
+#define TBCTL_CLKDIV_128			(7<<10)
+												
+#define TBCTL_HSPCLKDIV_MASK		(7<<7)			// High Speed Time-base Clock Prescale Bits
+													// These bits determine part of the time-base clock prescale value.
+													// TBCLK = SYSCLKOUT / (HSPCLKDIV × CLKDIV)
+													// This divisor emulates the HSPCLK in the TMS320x281x system as used on the Event Manager
+													// (EV) peripheral.
+
+#define TBCTL_HSPCLKDIV_1			(0<<7)	    	
+#define TBCTL_HSPCLKDIV_2			(1<<7)			// /2 (default on reset)
+#define TBCTL_HSPCLKDIV_4			(2<<7)      	
+#define TBCTL_HSPCLKDIV_6			(3<<7)      	
+#define TBCTL_HSPCLKDIV_8			(4<<7)      	
+#define TBCTL_HSPCLKDIV_10			(5<<7)      	
+#define TBCTL_HSPCLKDIV_12			(6<<7)      	
+#define TBCTL_HSPCLKDIV_14			(7<<7)      	
+
+#define TBCTL_SWFSYNC_MASK			(1<<6)			// Software Forced Synchronization Pulse
+
+#define TBCTL_SWFSYNC_FORCE			(1<<6)			// Writing a 0 has no effect and reads always return a 0.
+													// Writing a 1 forces a one-time synchronization pulse to be generated.
+													// This event is ORed with the EPWMxSYNCI input of the ePWM module.
+													// SWFSYNC is valid (operates) only when EPWMxSYNCI is selected by SYNCOSEL = 00.
+
+
+#define TBCTL_SYNCOSEL_MASK			(3<<4)			// Synchronization Output Select. These bits select the source of the EPWMxSYNCO signal.
+
+#define TBCTL_SYNCOSEL_EPWMXSYNC	0				// EPWMxSYNC
+#define TBCTL_SYNCOSEL_CTR_ZERO		(1<<4)			// CTR = zero: Time-base counter equal to zero (TBCTR = 0x0000)
+#define TBCTL_SYNCOSEL_CTR_CMPB		(2<<4)  		// CTR = CMPB : Time-base counter equal to counter-compare B (TBCTR = CMPB)
+#define TBCTL_SYNCOSEL_DISABLE		(3<<4)  		// Disable EPWMxSYNCO signal
+
+
+#define TBCTL_PRDLD_MASK			(1<<3)			// Active Period Register Load From Shadow Register Select
+
+#define TBCTL_PRDLD_SHADOW			(0)				// The period register (TBPRD) is loaded from its shadow register when the time-base counter,
+													// TBCTR, is equal to zero.
+													// A write or read to the TBPRD register accesses the shadow register.
+#define TBCTL_PRDLD_IMMEDIATE		(1<<3)			// Load the TBPRD register immediately without using a shadow register.
+													// A write or read to the TBPRD register directly accesses the active register.
+
+#define TBCTL_PHSEN_MASK			(1<<2)			// Counter Register Load From Phase Register Enable
+
+
+#define TBCTL_PHSEN_NOLOAD			0				// Do not load the time-base counter (TBCTR) from the time-base phase register (TBPHS)
+#define TBCTL_PHSEN_LOAD			(1<<2)			// Load the time-base counter with the phase register when an EPWMxSYNCI input signal occurs or
+													// when a software synchronization is forced by the SWFSYNC bit, or when a digital compare sync
+													// event occurs.
+
+#define TBCTL_CTRMODE_MASK			(3<<0)			// Counter Mode
+													// The time-base counter mode is normally configured once and not changed during normal operation.
+													// If you change the mode of the counter, the change will take effect at the next TBCLK edge and the
+													// current counter value shall increment or decrement from the value before the mode change.
+#define TBCTL_CTRMODE_UP_COUNT		0				// Up-count mode
+#define TBCTL_CTRMODE_DOWN_COUNT1	1   			// Down-count mode
+#define TBCTL_CTRMODE_UP_DOWN_COUNT	2   			// Up-down-count mode
+#define TBCTL_CTRMODE_STOP_FREEZE	3   			// Stop-freeze counter operation (default on reset)
+
+#define TBSTS(i)		RA(((i)-1)*0x40+0x6801)		// Time Base Status Register
+													//
+#define TBSTS_CTRMAX_MASK			(1<<2)			// Time-Base Counter Max Latched Status Bit
+													//
+#define TBSTS_CTRMAX_NONE			(0<<2)			// Reading a 0 indicates the time-base counter never reached its maximum value. Writing a 0 will
+													// have no effect.
+#define TBSTS_CTRMAX_MAX			(1<<2)  		// Reading a 1 on this bit indicates that the time-base counter reached the max value 0xFFFF. Writing
+													// a 1 to this bit will clear the latched event.
+													// 
+#define TBSTS_SYNCI_MASK			(1<<1)			// Input Synchronization Latched Status Bit
+													//
+#define TBSTS_SYNCI_NONE			0				// Writing a 0 will have no effect. Reading a 0 indicates no external synchronization event has
+													// occurred.
+#define TBSTS_SYNCI_SYNC			(1<<1)  		// Reading a 1 on this bit indicates that an external synchronization event has occurred
+													// (EPWMxSYNCI). Writing a 1 to this bit will clear the latched event.
+													// 
+#define TBSTS_CTRDIR_MASK			(1<<0)			// Time-Base Counter Direction Status Bit. At reset, the counter is frozen; therefore, this bit has no
+													// meaning. To make this bit meaningful, you must first set the appropriate mode via TBCTL[CTRMODE].
+#define TBSTS_CTRDIR_DOWN			0   			// Time-Base Counter is currently counting down.
+#define TBSTS_CTRDIR_UP				1   			// Time-Base Counter is currently counting up.
+
+#define TBPHSHR(i)		RA(((i)-1)*0x40+0x6802)		// Time Base Phase HRPWM Register
+#define TBPHS(i)		RA(((i)-1)*0x40+0x6803)		// Time Base Phase Register
+#define TBCTR(i)		RA(((i)-1)*0x40+0x6804)		// Time Base Counter Register
+#define TBPRD(i)		RA(((i)-1)*0x40+0x6805)		// Time Base Period Register Set
+#define TBPRDHR(i)		RA(((i)-1)*0x40+0x6806)		// Time Base Period High Resolution Register
+#define CMPCTL(i)		RA(((i)-1)*0x40+0x6807)		// Counter Compare Control Register
+#define CMPAHR(i)		RA(((i)-1)*0x40+0x6808)		// Time Base Compare A HRPWM Register
+#define CMPA(i)			RA(((i)-1)*0x40+0x6809)		// The value in the active CMPA register is continuously compared to the time-base counter (TBCTR). When
+													// the values are equal, the counter-compare module generates a "time-base counter equal to counter
+													// compare A" event. This event is sent to the action-qualifier where it is qualified and converted it into one
+													// or more actions. These actions can be applied to either the EPWMxA or the EPWMxB output depending
+													// on the configuration of the AQCTLA and AQCTLB registers. The actions that can be defined in the
+													// AQCTLA and AQCTLB registers include:
+													// • Do nothing; the event is ignored.
+													// • Clear: Pull the EPWMxA and/or EPWMxB signal low
+													// • Set: Pull the EPWMxA and/or EPWMxB signal high
+													// • Toggle the EPWMxA and/or EPWMxB signal
+													// Shadowing of this register is enabled and disabled by the CMPCTL[SHDWAMODE] bit. By default this
+													// register is shadowed.
+													// • If CMPCTL[SHDWAMODE] = 0, then the shadow is enabled and any write or read will automatically
+													// go to the shadow register. In this case, the CMPCTL[LOADAMODE] bit field determines which event
+													// will load the active register from the shadow register.
+													// • Before a write, the CMPCTL[SHDWAFULL] bit can be read to determine if the shadow register is
+													// currently full.
+													// • If CMPCTL[SHDWAMODE] = 1, then the shadow register is disabled and any write or read will go
+													// directly to the active register, that is the register actively controlling the hardware.
+													// • In either mode, the active and shadow registers share the same memory map address. 
+													//
+#define CMPB(i)			RA(((i)-1)*0x40+0x680A)		// The value in the active CMPB register is continuously compared to the time-base counter (TBCTR). When
+													// the/values are equal, the counter-compare module generates a "time-base counter equal to counter
+													// compare B" event. This event is sent to the action-qualifier where it is qualified and converted it into one
+													// or more actions. These actions can be applied to either the EPWMxA or the EPWMxB output depending
+													// on the configuration of the AQCTLA and AQCTLB registers. The actions that can be defined in the
+													// AQCTLA and AQCTLB registers include:
+													// • Do nothing. event is ignored.
+													// • Clear: Pull the EPWMxA and/or EPWMxB signal low
+													// • Set: Pull the EPWMxA and/or EPWMxB signal high
+													// • Toggle the EPWMxA and/or EPWMxB signal
+													// Shadowing of this register is enabled and disabled by the CMPCTL[SHDWBMODE] bit. By default this
+													// register is shadowed.
+													// • If CMPCTL[SHDWBMODE] = 0, then the shadow is enabled and any write or read will automatically
+													// go to the shadow register. In this case, the CMPCTL[LOADBMODE] bit field determines which event
+													// will load the active register from the shadow register:
+													// • Before a write, the CMPCTL[SHDWBFULL] bit can be read to determine if the shadow register is
+													// currently full.
+													// • If CMPCTL[SHDWBMODE] = 1, then the shadow register is disabled and any write or read will go
+													// directly to the active register, that is the register actively controlling the hardware.
+													// • In either mode, the active and shadow registers share the same memory map address.
+
+#define AQCTLA(i)		RA(((i)-1)*0x40+0x680B)		// Action Qualifier Control Register For Output A
+#define AQCTLB(i)		RA(((i)-1)*0x40+0x680C)		// Action Qualifier Control Register For Output B
+#define AQSFRC(i)		RA(((i)-1)*0x40+0x680D)		// Action Qualifier Software Force Register
+#define AQCSFRC(i)		RA(((i)-1)*0x40+0x680E)		// Action Qualifier Continuous S/W Force Register Set
+#define DBCTL(i)		RA(((i)-1)*0x40+0x680F)		// Dead-Band Generator Control Register
+#define DBRED(i)		RA(((i)-1)*0x40+0x6810)		// Dead-Band Generator Rising Edge Delay Count Register
+#define DBFED(i)		RA(((i)-1)*0x40+0x6811)		// Dead-Band Generator Falling Edge Delay Count Register
+#define TZSEL(i)		RA(((i)-1)*0x40+0x6812)		// Trip Zone Select Register
+#define TZDCSEL(i)		RA(((i)-1)*0x40+0x6813)		// Trip Zone Digital Compare Register
+#define TZCTL(i)		RA(((i)-1)*0x40+0x6814)		// Trip Zone Control Register
+#define TZEINT(i)		RA(((i)-1)*0x40+0x6815)		// Trip Zone Enable Interrupt Register
+#define TZFLG(i)		RA(((i)-1)*0x40+0x6816)		// Trip Zone Flag Register
+#define TZCLR(i)		RA(((i)-1)*0x40+0x6817)		// Trip Zone Clear Register
+#define TZFRC(i)		RA(((i)-1)*0x40+0x6818)		// Trip Zone Force Register
+#define ETSEL(i)		RA(((i)-1)*0x40+0x6819)		// Event Trigger Selection Register
+#define ETPS(i)			RA(((i)-1)*0x40+0x681A)		// Event Trigger Prescale Register
+#define ETFLG(i)		RA(((i)-1)*0x40+0x681B)		// Event Trigger Flag Register
+#define ETCLR(i)		RA(((i)-1)*0x40+0x681C)		// Event Trigger Clear Register
+#define ETFRC(i)		RA(((i)-1)*0x40+0x681D)		// Event Trigger Force Register
+#define PCCTL(i)		RA(((i)-1)*0x40+0x681E)		// PWM Chopper Control Register
+#define HRCNFG(i)		RA(((i)-1)*0x40+0x6820)		// HRPWM Configuration Register
+#define HRPWR(i)		RA(((i)-1)*0x40+0x6821)		// HRPWM Power Register
+#define HRMSTEP(i)		RA(((i)-1)*0x40+0x6826)		// HRPWM MEP Step Register
+#define HRPCTL(i)		RA(((i)-1)*0x40+0x6828)		// High resolution Period Control Register
+													// Note: This bit and the TBCTL[PHSEN] bit must be set to 1 when high resolution period control is
+													// enabled for up-down count mode even if TBPHSHR = 0x0000.
+													// 
+#define HRPCTL_TBPHSHRLOADE_MASK	(1<<2)			// TBPHSHR Load Enable
+													// This bit allows you to synchronize ePWM modules with a high-resolution phase on a SYNCIN,
+													// TBCTL[SWFSYNC], or digital compare event. This allows for multiple ePWM modules operating
+													// at the same frequency to be phase aligned with high-resolution.
+													// 
+#define	HRPCTL_TBPHSHRLOADE_DISABLE	0				// Disables synchronization of high-resolution phase on a SYNCIN, TBCTL[SWFSYNC] or digital
+													// compare event.
+													// 
+#define	HRPCTL_TBPHSHRLOADE_ENABLE	(1<<2)			// Synchronize the high-resolution phase on a SYNCIN, TBCTL[SWFSYNC] or digital comparator
+													// synchronization event. The phase is synchronized using the contents of the high-resolution phase
+													// TBPHSHR register.
+													// The TBCTL[PHSEN] bit which enables the loading of the TBCTR register with TBPHS register
+													// value on a SYNCIN, or TBCTL[SWFSYNC] event works independently. However, users need to
+													// enable this bit also if they want to control phase in conjunction with the high-resolution period
+													// feature.
+
+#define HRPCTL_HRPE_MASK			1				// High Resolution Period Enable Bit
+													// When high-resolution period is enabled, TBCTL[CTRMODE] = 0,1 (down-count mode) is not
+													// supported.
+													// 
+#define HRPCTL_HRPE_DISABLE			0   			// High resolution period feature disabled. In this mode the ePWM behaves as a Type 0 ePWM.
+													//
+#define HRPCTL_HRPE_ENABLE			1   			// High resolution period enabled. In this mode the HRPWM module can control high-resolution of
+													// both the duty and frequency.
+
+#define TBPRDHRM(i)		RA(((i)-1)*0x40+0x682A)		// Time Base Period HRPWM Register Mirror
+#define TBPRDM(i)		RA(((i)-1)*0x40+0x682B)		// Time Base Period Register Mirror
+#define CMPAHRM(i)		RA(((i)-1)*0x40+0x682C)		// Compare A HRPWM Register Mirror
+#define CMPAM(i)		RA(((i)-1)*0x40+0x682D)		// Compare A Register Mirror
+#define DCTRIPSEL(i)	RA(((i)-1)*0x40+0x6830)		// Digital Compare Trip Select Register
+#define DCACTL(i)		RA(((i)-1)*0x40+0x6831)		// Digital Compare A Control Register
+#define DCBCTL(i)		RA(((i)-1)*0x40+0x6832)		// Digital Compare B Control Register
+#define DCFCTL(i)		RA(((i)-1)*0x40+0x6833)		// Digital Compare Filter Control Register
+#define DCAPCT(i)		RA(((i)-1)*0x40+0x6834)		// Digital Compare Capture Control Register
+#define DCFOFFSET(i)	RA(((i)-1)*0x40+0x6835)		// Digital Compare Filter Offset Register
+#define DCFOFFSETCNT(i)	RA(((i)-1)*0x40+0x6836)		// Digital Compare Filter Offset Counter Register
+#define DCFWINDOW(i)	RA(((i)-1)*0x40+0x6837)		// Digital Compare Filter Window Register
+#define DCFWINDOWCNT(i)	RA(((i)-1)*0x40+0x6838)		// Digital Compare Filter Window Counter Register
+#define DCCAP(i)		RA(((i)-1)*0x40+0x6839)		// Digital Compare Counter Capture Register
 
 

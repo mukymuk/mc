@@ -36,13 +36,23 @@ OBJS := $(SRCS:.c=.o)
 OBJS := $(OBJS:.asm=.o)
 OBJS := $(addprefix ./$(OUTDIR)/,$(OBJS))
 
-$(OUTDIR)/$(TARGET): $(OBJS) $(LINKER_SCRIPT)
+$(OUTDIR)/$(TARGET): $(OBJS)
 	$(LD) $(INCS) $(LDFLAGS) -e=code_start --output_file="$@" $(OBJS) $(CMDS)
 
-all:	$(OUTDIRS) $(OUTDIR)/$(TARGET) $(OUTDIR)/$(TARGET)
+depend:
+	makedepend -f$(OUTDIR)/deps -Y$(TOOLCHAIN)/include -p$(OUTDIR)/ -- $(CFLAGS) -- $(SRCS)
+
+$(OUTDIR)/deps:
+	touch $(OUTDIR)/deps
+	make depend CFG=$(CFG)
+
+all:	$(OUTDIRS) $(OUTDIR)/$(TARGET) $(OUTDIR)/$(TARGET) $(OUTDIR)/deps
 clean:
 	rm -rf $(OUTDIR)
 	make all
 
+
 .DEFAULT_GOAL=all
+
+include $(OUTDIR)/deps
 

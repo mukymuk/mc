@@ -22,6 +22,7 @@ void interrupt isr_stub( void )
 	}
 }
 
+/*
 static const PISR s_ivt[128] =
 {
 	isr_stub,		// unused
@@ -189,10 +190,15 @@ static const PISR s_ivt[128] =
 	isr_stub,		// reserved
 	isr_stub		// reserved
 };
+*/
 
 void pie_init(void)
 {
-	memcpy( PIE_IVT,s_ivt,sizeof(s_ivt) );
+	uint16_t i;
+	for (i=0;i<128;i++)
+	{
+		PIE_IVT[i] = isr_stub;
+	}
 	PIECTRL = PIECTRL_ENPIE_ENABLE;
 	PIEACK = PIEACK_ACK_ALL;
 }
