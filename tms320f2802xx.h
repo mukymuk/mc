@@ -8,6 +8,9 @@
 #define  ESTOP0()  asm(" ESTOP0")
 #define  IDLE90()  asm(" IDLE")
 
+#define RA(x)	(*((volatile uint16_t*)(x)))
+#define RA32(x)	(*((volatile uint32_t*)(x)))
+
 extern cregister volatile unsigned int IFR;
 extern cregister volatile unsigned int IER;
 
@@ -16,7 +19,7 @@ extern cregister volatile unsigned int IER;
 // SPRUFN3D
 // TMS320F2802x/TMS320F2802xx Piccolo System Control and Interrupts
 
-#define LOSPCP		(*((volatile uint16_t*)0x00701B))
+#define LOSPCP		RA(0x00701B)
 
 #define LOSPCP_LSPCLK_MASK					7
 #define LOSPCP_LSPCLK_DIV1					0
@@ -28,7 +31,7 @@ extern cregister volatile unsigned int IER;
 #define LOSPCP_LSPCLK_DIV12					6
 #define LOSPCP_LSPCLK_DIV14					7
 
-#define CLKCTL		(*((volatile uint16_t*)0x007012))
+#define CLKCTL		RA(0x007012)
 
 #define CLKCTL_NMIRESETSEL_MASK				(1<<15)
 #define CLKCTL_NMIRESETSEL_MCLKHS			0
@@ -87,7 +90,7 @@ extern cregister volatile unsigned int IER;
 #define CLKCTL_OSCCLKSRCSEL_INTOSC1			0
 #define CLKCTL_OSCCLKSRCSEL_EXTOSC_INTOSC2	(1<<0)
 
-#define XCLK	(*((volatile uint16_t*)0x007010))
+#define XCLK	RA(0x007010)
 
 #define XCLK_XCLKINSEL_MASK		(1<<6)
 #define XCLK_XCLKINSEL_GPIO38	0
@@ -99,7 +102,7 @@ extern cregister volatile unsigned int IER;
 #define XCLK_XCLKOUTDIV_DIV1	(2<<0)
 #define XCLK_XCLKOUTDIV_OFF		(3<<0)
 
-#define PLLSTS	(*((volatile uint16_t*)0x007011))
+#define PLLSTS	RA(0x007011)
 
 #define PLLSTS_NORMRDYE_MASK		(1<<16)
 #define PLLSTS_NORMRDYE_ENABLE		(1<<16)
@@ -133,7 +136,7 @@ extern cregister volatile unsigned int IER;
 #define PLLSTS_PLLLOCKS_LOCKING		0
 #define PLLSTS_PLLLOCKS_STABLE		(1<<0)
 
-#define PLLCR	(*((volatile uint16_t*)0x007021))
+#define PLLCR	RA(0x007021)
 
 #define PLLCR_DIV_MASK				(0x000F)
 #define PLLCR_DIV_BYPASS			0
@@ -148,9 +151,9 @@ extern cregister volatile unsigned int IER;
 #define PLLCR_DIV_9					9
 #define PLLCR_DIV_10				10
 #define PLLCR_DIV_11				11
-#define PLLCR_DIV_12				(uint16_t)12
+#define PLLCR_DIV_12				12
 
-#define PCLKCR0	(*((volatile uint16_t*)0x00701C))
+#define PCLKCR0	RA(0x00701C)							// Peripheral Clock Control Register 0
 
 #define PCLKCR0_SCIAENCLK_MASK				(1<<10)		// SCI-A clock enable
 														//
@@ -199,7 +202,7 @@ extern cregister volatile unsigned int IER;
 #define PCLKCR0_HRPWMENCLK_DISABLE			0			// HRPWM is not enabled.
 #define PCLKCR0_HRPWMENCLK_ENABLE			(1<<0)		// HRPWM is enabled.
 
-#define PCLKCR1	(*((volatile uint16_t*)0x00701C))
+#define PCLKCR1	RA(0x00701D)							// Peripheral Clock Control Register 1
 
 #define PCLKCR1_ECAP1ENCLK_MASK				(1<<8)		// eCAP1 clock enable	
 #define PCLKCR1_ECAP1ENCLK_DISABLE			0			// The eCAP1 module is not clocked. (default)
@@ -248,7 +251,7 @@ extern cregister volatile unsigned int IER;
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-#define PIECTRL		(*((volatile uint16_t*)0x000CE0))
+#define PIECTRL		RA(0x000CE0)
 
 #define PIECTRL_PIEVECT_MASK				0xFFFE		// These bits indicate the address within the PIE vector table from which the vector was fetched. The
 														// least significant bit of the address is ignored and only bits 1 to 15 of the address is shown. You can
@@ -267,7 +270,7 @@ extern cregister volatile unsigned int IER;
 #define PIECTRL_ENPIE_ENABLE				1			// When ENPIE is set to 1, all vectors, except for reset, are fetched from the PIE vector table. The reset
 														// vector is always fetched from the boot ROM.
 
-#define PIEACK		(*((volatile uint16_t*)0x000CE1))
+#define PIEACK		RA(0x000CE1)
 
 // Each bit in PIEACK refers to a specific PIE group. Bit 0 refers to interrupts in PIE group 1 that are
 // MUXed into INT1 up to Bit 11, which refers to PIE group 12 which is MUXed into CPU IN T12
@@ -292,18 +295,18 @@ extern cregister volatile unsigned int IER;
 #define PIEACK_INT11				(1<<10)
 #define PIEACK_INT12				(1<<11)
 
-#define PIEIFR1		(*((volatile uint16_t*)0x000CE3))
-#define PIEIFR2		(*((volatile uint16_t*)0x000CE5))
-#define PIEIFR3		(*((volatile uint16_t*)0x000CE7))
-#define PIEIFR4		(*((volatile uint16_t*)0x000CE9))
-#define PIEIFR5		(*((volatile uint16_t*)0x000CEB))
-#define PIEIFR6		(*((volatile uint16_t*)0x000CED))
-#define PIEIFR7		(*((volatile uint16_t*)0x000CEF))
-#define PIEIFR8		(*((volatile uint16_t*)0x000CF1))
-#define PIEIFR9		(*((volatile uint16_t*)0x000CF3))
-#define PIEIFR10	(*((volatile uint16_t*)0x000CF5))
-#define PIEIFR11	(*((volatile uint16_t*)0x000CF7))
-#define PIEIFR12	(*((volatile uint16_t*)0x000CF9))
+#define PIEIFR1						RA(0x000CE3)
+#define PIEIFR2						RA(0x000CE5)
+#define PIEIFR3						RA(0x000CE7)
+#define PIEIFR4						RA(0x000CE9)
+#define PIEIFR5						RA(0x000CEB)
+#define PIEIFR6						RA(0x000CED)
+#define PIEIFR7						RA(0x000CEF)
+#define PIEIFR8						RA(0x000CF1)
+#define PIEIFR9						RA(0x000CF3)
+#define PIEIFR10					RA(0x000CF5)
+#define PIEIFR11					RA(0x000CF7)
+#define PIEIFR12					RA(0x000CF9)
 
 #define PIEIER_INT8					(1<<7)
 #define PIEIER_INT7					(1<<6)
@@ -354,10 +357,29 @@ extern cregister volatile unsigned int IER;
 
 
 #define PIEIER(x)	RA(((x)-1)*2+0xCE2)		// INT(1-12) Group Enable Register
-#define PIEIFR(x)	RA(((x)-1))*2+0xCE3)	// INT(1-12) Group Flag Register
+#define PIEIFR(x)	RA(((x)-1)*2+0xCE3)		// INT(1-12) Group Flag Register
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// GPIO
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#define GPA_MASK(io)				(1<<(io))
+#define GPB_MASK(io)				(1<<((io)-32))
 
 
-#define GPAMUX1	(*((volatile uint16_t*)0x006F86))
+#define GPACTRL						RA32(0x6F80)	// GPIO A Control Register (GPIO0-GPIO31)
+													
+// TODO:  GPACTRL bitfields
+
+#define GPAQSEL1 					RA32(0x6F82)	// GPIO A Qualifier Select 1 Register (GPIO0-GPIO15)
+													
+// TODO:  GPAQSEL1 bitfields
+ 													
+#define GPAQSEL2 					RA32(0x6F84)	// GPIO A Qualifier Select 2 Register (GPIO16-GPIO31)
+													
+// TODO:  GPAQSEL2 bitfields
+													
+#define GPAMUX1 					RA32(0x6F86)	// GPIO A MUX 1 Register (GPIO0-GPIO15)
 
 #define GPAMUX1_GPIO12_MASK			(3<<24)
 #define GPAMUX1_GPIO12_GPIO			0
@@ -402,8 +424,8 @@ extern cregister volatile unsigned int IER;
 #define GPAMUX1_GPIO0_GPIO			0
 #define GPAMUX1_GPIO0_EPWM1A		1
 
-#define GPAMUX2	(*((volatile uint16_t*)0x006F88))
-
+#define GPAMUX2 					RA32(0x6F88)	// GPIO A MUX 2 Register (GPIO16-GPIO31)
+													
 #define GPAMUX2_GPIO29_MASK			(3<<26)
 #define GPAMUX2_GPIO29_GPIO			0
 #define GPAMUX2_GPIO29_SCITXDA		(1<<26)
@@ -428,21 +450,48 @@ extern cregister volatile unsigned int IER;
 #define GPAMUX2_GPIO18_SCITXDA		(2<<4)
 #define GPAMUX2_GPIO18_XCLKOUT		(3<<4)
 
+#define GPADIR 						RA32(0x6F8A)	// GPIO A Direction Register (GPIO0-GPIO31)
 
-#define GPADIR 		(*((volatile uint32_t*)0x006F8A))
-#define GPBDIR 		(*((volatile uint32_t*)0x006F9A))
-#define GPASET		(*((volatile uint32_t*)0x006FC2))
-#define GPBSET		(*((volatile uint32_t*)0x006FCA))
-#define GPACLEAR	(*((volatile uint32_t*)0x006FC4))
-#define GPBCLEAR	(*((volatile uint32_t*)0x006FCC))
-#define GPATOGGLE	(*((volatile uint32_t*)0x006FC6))
-#define GPBTOGGLE   (*((volatile uint32_t*)0x006FCE))
+#define GPADIR_INPUT(io)			0				// GPIO A input (GPIO0-GPIO31)
+#define GPADIR_OUTPUT(io)			GPA_MASK(io)	// GPIO A output (GPIO0-GPIO31)
 
-#define GPIO_MASK(io)		(1<<(io))
-#define GPIO_INPUT(io)		0
-#define GPIO_OUTPUT(io)		(1<<(io))
+#define GPAPUD 						RA32(0x6F8C)	// GPIO A Pull Up Disable Register (GPIO0-GPIO31)
+													
+#define GPAPUD_ENABLE(io)			0				// enable port A pullup (GPIO32-GPIO38)
+#define GPAPUD_DISABLE(io)			GPA_MASK(io)	// disable port A pullup (GPIO32-GPIO38)
+													
+#define GPBCTRL 					RA32(0x6F90)	// GPIO B Control Register (GPIO32-GPIO38)
 
-#define WDCR	(*((volatile uint16_t*)0x007029))
+// TODO:  GPBCTRL bitfields
+
+#define GPBQSEL1 					RA32(0x6F92)	// GPIO B Qualifier Select 1 Register (GPIO32-GPIO38)
+#define GPBMUX1 					RA32(0x6F96)	// GPIO B MUX 1 Register (GPIO32-GPIO38)
+#define GPBDIR 						RA32(0x6F9A)	// GPIO B Direction Register (GPIO32-GPIO38)
+													
+#define GPBDIR_INPUT(io)			0				// GPIO B input (GPIO32-GPIO38)
+#define GPBDIR_OUTPUT(io)			GPB_MASK(io)	// GPIO B output (GPIO32-GPIO38)
+
+#define GPBPUD 						RA32(0x6F9C)	// GPIO B Pull Up Disable Register (GPIO32-GPIO38)
+													
+#define GPBPUD_ENABLE(io)			0				// enable port B pullup (GPIO32-GPIO38)
+#define GPBPUD_DISABLE(io)			GPB_MASK(io)	// disable port B pullup (GPIO32-GPIO38)
+
+#define AIOMUX1 					RA32(0x6FB6)	// Analog, I/O MUX 1 register (AIO0 - AIO15)
+#define AIODIR 						RA32(0x6FBA)	// Analog, I/O Direction Register (AIO0 - AIO15) 
+
+#define GPASET						RA32(0x006FC2)
+#define GPBSET						RA32(0x006FCA)
+#define GPACLEAR					RA32(0x006FC4)
+#define GPBCLEAR					RA32(0x006FCC)
+#define GPATOGGLE					RA32(0x006FC6)
+#define GPBTOGGLE   				RA32(0x006FCE)
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// WATCHDOG
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+#define WDCR			RA(0x007029)
 
 #define WDCR_WDFLAG_MASK		(1<<7)
 #define WDCR_WDFLAG_POWER_ON	(0)
@@ -466,13 +515,17 @@ extern cregister volatile unsigned int IER;
 #define WDCR_WDPS_DIV8			6
 #define WDCR_WDPS_DIV4			7
 
-#define FOPT (*((volatile uint16_t*)0x000A80))
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///  FLASH
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#define FOPT 		RA(0x000A80)
 
 #define FOPT_ENPIPE_MASK		1
 #define FOPT_ENPIPE_DISABLE		0
 #define FOPT_ENPIPE_ENABLE		1
 
-#define FBANKWAIT (*((volatile uint16_t*)0x000A86))
+#define FBANKWAIT 		RA(0x000A86)
 
 #define FBANKWAIT_PAGEWAIT_MASK		(15<<8)
 #define FBANKWAIT_PAGEWAIT(c)		(((c)<<8)&FBANKWAIT_PAGEWAIT_MASK)
@@ -480,8 +533,7 @@ extern cregister volatile unsigned int IER;
 #define FBANKWAIT_RANDWAIT_MASK		(7<<0)
 #define FBANKWAIT_RANDWAIT(c)		(((c)<<0)&FBANKWAIT_RANDWAIT_MASK)
 
-#define RA(x)	(*((volatile uint16_t*)(x)))
-												
+											
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///	32-BIT CPU Timers 0/1/2
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -580,7 +632,6 @@ extern cregister volatile unsigned int IER;
 #define TIMERTCR_TSS_STOPPED	(1<<4)			// Reads of 1 indicate that the CPU-timer is stopped.
 												// To stop the CPU-timer, set TSS to 1
 
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///	PWM
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -669,7 +720,7 @@ extern cregister volatile unsigned int IER;
 													// current counter value shall increment or decrement from the value before the mode change.
 #define TBCTL_CTRMODE_UP_COUNT		0				// Up-count mode
 #define TBCTL_CTRMODE_DOWN_COUNT1	1   			// Down-count mode
-#define TBCTL_CTRMODE_UP_DOWN_COUNT	2   			// Up-down-count mode
+#define TBCTL_CTRMODE_UP_DOWN_COUNT	2				// Up-down-count mode
 #define TBCTL_CTRMODE_STOP_FREEZE	3   			// Stop-freeze counter operation (default on reset)
 
 #define TBSTS(i)		RA(((i)-1)*0x40+0x6801)		// Time Base Status Register
@@ -720,7 +771,8 @@ extern cregister volatile unsigned int IER;
 													// • If CMPCTL[SHDWAMODE] = 1, then the shadow register is disabled and any write or read will go
 													// directly to the active register, that is the register actively controlling the hardware.
 													// • In either mode, the active and shadow registers share the same memory map address. 
-													//
+
+
 #define CMPB(i)			RA(((i)-1)*0x40+0x680A)		// The value in the active CMPB register is continuously compared to the time-base counter (TBCTR). When
 													// the/values are equal, the counter-compare module generates a "time-base counter equal to counter
 													// compare B" event. This event is sent to the action-qualifier where it is qualified and converted it into one
@@ -743,6 +795,48 @@ extern cregister volatile unsigned int IER;
 													// • In either mode, the active and shadow registers share the same memory map address.
 
 #define AQCTLA(i)		RA(((i)-1)*0x40+0x680B)		// Action Qualifier Control Register For Output A
+													
+#define AQCTL_CBD_MASK			(3<<10)				// Action when the time-base counter equals the active CMPB register and the counter is decrementing
+#define AQCTL_CBD_DISABLE		(0<<10)				// Do nothing (action disabled)
+#define AQCTL_CBD_CLEAR			(1<<10) 			// Clear: force EPWMxA output low.
+#define AQCTL_CBD_SET			(2<<10) 			// Set: force EPWMxA output high.
+#define AQCTL_CBD_TOGGLE		(3<<10) 			// Toggle EPWMxA output: low output signal will be forced high, and a high signal will be forced low.
+
+#define AQCTL_CBU_MASK			(3<<8)				// Action when the counter equals the active CMPB register and the counter is incrementing.
+#define AQCTL_CBU_DISABLE		(0<<8)				// Do nothing (action disabled)
+#define AQCTL_CBU_CLEAR			(1<<8)  			// Clear: force EPWMxA output low.
+#define AQCTL_CBU_SET			(2<<8)  			// Set: force EPWMxA output high.
+#define AQCTL_CBU_TOGGLE		(3<<8)  			// Toggle EPWMxA output: low output signal will be forced high, and a high signal will be forced low.
+
+#define AQCTL_CAD_MASK			(3<<6)				// Action when the counter equals the active CMPA register and the counter is decrementing.
+#define AQCTL_CAD_DISABLE		(0<<6)				// Do nothing (action disabled)
+#define AQCTL_CAD_CLEAR			(1<<6)  			// Clear: force EPWMxA output low.
+#define AQCTL_CAD_SET			(2<<6)  			// Set: force EPWMxA output high.
+#define AQCTL_CAD_TOGGLE		(3<<6)  			// Toggle EPWMxA output: low output signal will be forced high, and a high signal will be forced low.
+
+#define AQCTL_CAU_MASK			(3<<4)				// Action when the counter equals the active CMPA register and the counter is incrementing.
+#define AQCTL_CAU_DISABLE		(0<<4)				// Do nothing (action disabled)
+#define AQCTL_CAU_CLEAR			(1<<4)  			// Clear: force EPWMxA output low.
+#define AQCTL_CAU_SET			(2<<4)  			// Set: force EPWMxA output high.
+#define AQCTL_CAU_TOGGLE		(3<<4)  			// Toggle EPWMxA output: low output signal will be forced high, and a high signal will be forced low.
+
+#define AQCTL_PRD_MASK          (3<<2)				// Action when the counter equals the period.
+													// Note: By definition, in count up-down mode when the counter equals period the direction is defined
+													// as 0 or counting down.
+#define AQCTL_PRD_DISABLE       (0<<2)				// Do nothing (action disabled)
+#define AQCTL_PRD_CLEAR         (1<<2)  			// Clear: force EPWMxA output low.
+#define AQCTL_PRD_SET           (2<<2)  			// Set: force EPWMxA output high.
+#define AQCTL_PRD_TOGGLE        (3<<2)  			// Toggle EPWMxA output: low output signal will be forced high, and a high signal will be forced low.
+
+#define AQCTL_PRO_MASK			(3<<0)				// Action when counter equals zero.
+													// Note: By definition, in count up-down mode when the counter equals 0 the direction is defined as 1
+													// or counting up.
+#define AQCTL_ZRO_DISABLE       (0<<0)				// Do nothing (action disabled)
+#define AQCTL_ZRO_CLEAR         (1<<0)  			// Clear: force EPWMxA output low.
+#define AQCTL_ZRO_SET           (2<<0)  			// Set: force EPWMxA output high.
+#define AQCTL_ZRO_TOGGLE        (3<<0)  			// Toggle EPWMxA output: low output signal will be forced high, and a high signal will be forced low.
+
+
 #define AQCTLB(i)		RA(((i)-1)*0x40+0x680C)		// Action Qualifier Control Register For Output B
 #define AQSFRC(i)		RA(((i)-1)*0x40+0x680D)		// Action Qualifier Software Force Register
 #define AQCSFRC(i)		RA(((i)-1)*0x40+0x680E)		// Action Qualifier Continuous S/W Force Register Set
@@ -809,4 +903,58 @@ extern cregister volatile unsigned int IER;
 #define DCFWINDOWCNT(i)	RA(((i)-1)*0x40+0x6838)		// Digital Compare Filter Window Counter Register
 #define DCCAP(i)		RA(((i)-1)*0x40+0x6839)		// Digital Compare Counter Capture Register
 
+
+typedef void interrupt (*PISR)(void);
+
+#define IV_TIMER1		13
+#define IV_TIMER2		14
+#define IV_DATALOG		15
+#define IV_RTOSINT		16
+#define IV_EMUINT		17
+#define IV_NMI  		18
+#define IV_ILLEGAL  	19
+#define IV_USER1		20
+#define IV_USER2		21
+#define IV_USER3		22
+#define IV_USER4		23
+#define IV_USER5		24
+#define IV_USER6		25
+#define IV_USER7		26
+#define IV_USER8		27
+#define IV_USER9		28
+#define IV_USER10   	29
+#define IV_USER11   	30
+#define IV_USER12   	31
+#define IV_ADCINT1A  	32	// not sure how this is different from IV_ADCINT1
+#define IV_ADCINT2A		33	// not sure how this is different from IV_ADCINT2
+#define IV_XINT1		35
+#define IV_XINT2		36
+#define IV_ADCINT9		37
+#define IV_TINT0		38
+#define IV_WAKEINT		39
+#define IV_EPWM1_TZINT	40
+#define IV_EPWM2_TZINT	41
+#define IV_EPWM3_TZINT	42
+#define IV_EPWM4_TZINT	43
+#define IV_EPWM1_INT	48
+#define IV_EPWM2_INT	49
+#define IV_EPWM3_INT	50
+#define IV_EPWM4_INT	51
+#define IV_ECAP1_INT	56
+#define IV_EQEP1_INT	64
+#define IV_SPIRXINTA	72
+#define IV_SPITXINTA	73
+#define IV_I2CINT1A		88
+#define IV_I2CINT2A		89
+#define IV_SCIRXINTA	96
+#define IV_SCITXINTA	97
+#define IV_ADCINT1		104
+#define IV_ADCINT2		105
+#define IV_ADCINT3		106
+#define IV_ADCINT4		107
+#define IV_ADCINT5		108
+#define IV_ADCINT6		109
+#define IV_ADCINT7		110
+#define IV_ADCINT8		111
+#define IV_XINT3		120
 

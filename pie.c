@@ -2,24 +2,36 @@
 #include "tms320f2802xx.h"
 #include "pie.h"
 
-
-typedef void interrupt (*PISR)(void);
-
-
 #define COUNT_OF(x)	(sizeof(x)/sizeof(*x))
+
 
 #pragma CODE_SECTION(isr_cpu_timer2,"ramfuncs")
 void interrupt isr_cpu_timer2( void )
 {
-	GPATOGGLE = GPIO_MASK(0);
+	static int16_t	cmp;
+	static int16_t step = 100;
+
+	GPATOGGLE = GPA_MASK(3);
+	cmp += step;
+	if(  cmp > 2000 )
+	{
+		cmp = 2000;
+		step = -step;
+		cmp += step;
+	}
+	else if(  cmp < 0 )
+	{
+		cmp = 0;
+		step = -step;
+		cmp += step;
+	}
+	CMPA(1) = cmp;
 }
 
 
 void interrupt isr_stub( void )
 {
-	while( 1 )
-	{
-	}
+	ESTOP0();
 }
 
 /*
@@ -192,6 +204,7 @@ static const PISR s_ivt[128] =
 };
 */
 
+
 void pie_init(void)
 {
 	uint16_t i;
@@ -199,6 +212,12 @@ void pie_init(void)
 	{
 		PIE_IVT[i] = isr_stub;
 	}
+	/*for (i=1;i<13;i++)
+	{
+		PIEIER(i) = 0;
+		PIEIFR(i) = 0;
+	}*/
+	PIE_IVT[IV_TIMER2] = isr_cpu_timer2;
 	PIECTRL = PIECTRL_ENPIE_ENABLE;
 	PIEACK = PIEACK_ACK_ALL;
 }
