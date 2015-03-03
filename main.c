@@ -10,6 +10,103 @@ extern uint16_t InitOnlyLoadStart;
 extern uint16_t InitOnlyLoadSize;
 extern uint16_t InitOnlyRunStart;
 
+
+static void drv8301_init( void )
+{
+	GPBMUX1 = 	GPBMUX1_GPIO38_GPIO |		// internal
+				GPBMUX1_GPIO37_GPIO |		// internal
+				GPBMUX1_GPIO36_GPIO |		// internal
+				GPBMUX1_GPIO35_GPIO |		// internal
+				GPBMUX1_GPIO34_GPIO |		// S1.1
+				GPBMUX1_GPIO33_GPIO |		// connected to GPIO17
+				GPBMUX1_GPIO32_GPIO;		// connected to GPIO16
+
+	GPAMUX2 = 	GPAMUX2_GPIO29_GPIO |		// OCTW* (OC input)
+				GPAMUX2_GPIO28_GPIO |		// FAULT* (OC input)
+				GPAMUX2_GPIO19_GPIO |		// M_PWM_SCS (output)
+				GPAMUX2_GPIO18_SPICLKA |	// SCLK
+				GPAMUX2_GPIO17_SPISOMIA |	// GAIN_SDO
+				GPAMUX2_GPIO16_SPISIMOA;	// M_OC_SDI
+	GPAMUX1 = 	GPAMUX1_GPIO12_GPIO |
+				GPAMUX1_GPIO7_GPIO |		// DC_CAL (output)
+				GPAMUX1_GPIO6_GPIO |		// EN_GATE (output)
+				GPAMUX1_GPIO5_EPWM3B |		// PWM_CL
+				GPAMUX1_GPIO4_EPWM3A |		// PWM_CH
+				GPAMUX1_GPIO3_EPWM2B |		// PWM_BL
+				GPAMUX1_GPIO2_EPWM2A |		// PWM_BH
+				GPAMUX1_GPIO1_EPWM1B |		// PWM_AL
+				GPAMUX1_GPIO0_EPWM1A;		// PWM_AH
+
+	GPADIR =	GPADIR_OUTPUT(0) |
+				GPADIR_OUTPUT(1) |
+				GPADIR_OUTPUT(2) |
+				GPADIR_OUTPUT(3) |
+				GPADIR_OUTPUT(4) |
+				GPADIR_OUTPUT(5) |
+				GPADIR_OUTPUT(6) |
+				GPADIR_OUTPUT(7) |
+				GPADIR_OUTPUT(8) |
+				GPADIR_OUTPUT(9) |
+				GPADIR_OUTPUT(10) |
+				GPADIR_OUTPUT(11) |
+				GPADIR_OUTPUT(12) |
+				GPADIR_OUTPUT(13) |
+				GPADIR_OUTPUT(14) |
+				GPADIR_OUTPUT(15) |
+				GPADIR_OUTPUT(16) |
+				GPADIR_INPUT(17)  |
+				GPADIR_OUTPUT(18) |
+				GPADIR_OUTPUT(19) |
+				GPADIR_OUTPUT(20) |
+				GPADIR_OUTPUT(21) |
+				GPADIR_OUTPUT(22) |
+				GPADIR_OUTPUT(23) |
+				GPADIR_OUTPUT(24) |
+				GPADIR_OUTPUT(25) |
+				GPADIR_OUTPUT(26) |
+				GPADIR_OUTPUT(27) |
+				GPADIR_INPUT(28)  |
+				GPADIR_INPUT(29)  |
+				GPADIR_OUTPUT(30) |
+				GPADIR_OUTPUT(31);
+
+	GPAPUD = 	GPAPUD_DISABLE(0) 	| 		// PMW's
+				GPAPUD_DISABLE(1) 	|
+				GPAPUD_DISABLE(2) 	|
+				GPAPUD_DISABLE(3) 	|
+				GPAPUD_DISABLE(4) 	|
+				GPAPUD_DISABLE(5) 	|
+				GPAPUD_DISABLE(6) 	|		// EN_GATE (output)
+				GPAPUD_DISABLE(7) 	|		// DC_CAL (output)
+				GPAPUD_DISABLE(16)  |		// M_OC_SDI
+				GPAPUD_DISABLE(17)  |		// GAIN_SDO
+				GPAPUD_DISABLE(18)	|		// SCLK
+				GPAPUD_DISABLE(19)  |		// M_PWM_SCS (output)
+				GPAPUD_DISABLE(20)	|		// internal
+				GPAPUD_DISABLE(21)	|		// internal
+				GPAPUD_DISABLE(22)	|		// internal
+				GPAPUD_DISABLE(23)	|		// internal
+				GPAPUD_DISABLE(24)	|		// internal
+				GPAPUD_DISABLE(25)	|		// internal
+				GPAPUD_DISABLE(26)	|		// internal
+				GPAPUD_DISABLE(27)	|		// internal
+				GPAPUD_ENABLE(28)	|		// FAULT* (OC input)
+				GPAPUD_ENABLE(29)	|		// OCTW* (OC input)
+				GPAPUD_DISABLE(30)	|		// internal
+				GPAPUD_DISABLE(31);			// internal
+
+	GPBPUD =	GPBPUD_DISABLE(38)  |		// internal
+				GPBPUD_DISABLE(37)  |		// internal
+				GPBPUD_DISABLE(36)  |		// internal
+				GPBPUD_DISABLE(35)  |		// internal
+				GPBPUD_DISABLE(34)  |		// S1.1
+				GPBPUD_DISABLE(33)  |		// connected to GPIO17
+				GPBPUD_DISABLE(32);			// connected to GPIO16
+
+	GPADIR = GPADIR_OUTPUT(0)|GPADIR_OUTPUT(1)|GPADIR_OUTPUT(2)|GPADIR_OUTPUT(3);
+	GPASET = GPA_MASK(0)|GPA_MASK(1)|GPA_MASK(2)|GPA_MASK(3);
+}
+
 //#pragma CODE_SECTION(test,"ramfuncs")
 #pragma CODE_SECTION(flash_config,"ramfuncs")
 #endif

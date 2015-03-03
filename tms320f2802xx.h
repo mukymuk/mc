@@ -363,8 +363,8 @@ extern cregister volatile unsigned int IER;
 /// GPIO
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#define GPA_MASK(io)				(1<<(io))
-#define GPB_MASK(io)				(1<<((io)-32))
+#define GPA_MASK(io)				((uint32_t)1<<(io))
+#define GPB_MASK(io)				((uint32_t)1<<((io)-32))
 
 
 #define GPACTRL						RA32(0x6F80)	// GPIO A Control Register (GPIO0-GPIO31)
@@ -427,28 +427,37 @@ extern cregister volatile unsigned int IER;
 #define GPAMUX2 					RA32(0x6F88)	// GPIO A MUX 2 Register (GPIO16-GPIO31)
 													
 #define GPAMUX2_GPIO29_MASK			(3<<26)
-#define GPAMUX2_GPIO29_GPIO			0
-#define GPAMUX2_GPIO29_SCITXDA		(1<<26)
-#define GPAMUX2_GPIO29_SCLA			(2<<26)
-#define GPAMUX2_GPIO29_TZ3			(3<<26)
+#define GPAMUX2_GPIO29_GPIO			0				// GPIO29 (I/O) General purpose I/O 29 (default) (I/O)
+#define GPAMUX2_GPIO29_SCITXDA		(1<<26) 		// SCITXDA - SCI-A transmit. (O)
+#define GPAMUX2_GPIO29_SCLA			(2<<26) 		// SCLA (I/OC)
+#define GPAMUX2_GPIO29_TZ3			(3<<26) 		// TZ3 - Trip zone 3(I)
 
-#define GPAMUX2_GPIO28_MASK			(3<<24)
-#define GPAMUX2_GPIO28_GPIO			0
-#define GPAMUX2_GPIO28_SCIRXDA		(1<<24)
-#define GPAMUX2_GPIO28_SDAA			(2<<24)
-#define GPAMUX2_GPIO28_TZ2			(3<<24)
+#define GPAMUX2_GPIO28_MASK			(3<<24)			
+#define GPAMUX2_GPIO28_GPIO			0   			// GPIO28 (I/O) General purpose I/O 28 (default) (I/O)
+#define GPAMUX2_GPIO28_SCIRXDA		(1<<24) 		// SCIRXDA - SCI-A receive (I)
+#define GPAMUX2_GPIO28_SDAA			(2<<24) 		// SDAA (I/OC)
+#define GPAMUX2_GPIO28_TZ2			(3<<24) 		// TZ2 - Trip zone 2(I)
 
 #define GPAMUX2_GPIO19_MASK			(3<<6)
-#define GPAMUX2_GPIO19_GPIO			0
-#define GPAMUX2_GPIO19_SPISTEA		(1<<6)
-#define GPAMUX2_GPIO19_SCIRXDA		(2<<6)
-#define GPAMUX2_GPIO19_ECAP1		(3<<6)
+#define GPAMUX2_GPIO19_GPIO			0				// GPIO19 - General purpose I/O 19 (default) (I/O)
+#define GPAMUX2_GPIO19_SPISTEA		(1<<6)  		// SPISTEA - SPI-A slave transmit enable (I/O)
+#define GPAMUX2_GPIO19_SCIRXDA		(2<<6)  		// SCIRXDA (I)
+#define GPAMUX2_GPIO19_ECAP1		(3<<6)  		// ECAP1 (I/O)
 
-#define GPAMUX2_GPIO18_MASK			(3<4)
-#define GPAMUX2_GPIO18_GPIO			0
-#define GPAMUX2_GPIO18_SPICLKA		(1<<4)
-#define GPAMUX2_GPIO18_SCITXDA		(2<<4)
-#define GPAMUX2_GPIO18_XCLKOUT		(3<<4)
+#define GPAMUX2_GPIO18_MASK			(3<<4)
+#define GPAMUX2_GPIO18_GPIO			0				// GPIO18 - General purpose I/O 18 (default) (I/O)
+#define GPAMUX2_GPIO18_SPICLKA		(1<<4)  		// SPICLKA - SPI-A clock (I/O)
+#define GPAMUX2_GPIO18_SCITXDA		(2<<4)  		// SCITXDA (O)
+#define GPAMUX2_GPIO18_XCLKOUT		(3<<4)  		// XCLKOUT (O) - External clock output
+
+#define GPAMUX2_GPIO17_MASK			(3<<2)
+#define GPAMUX2_GPIO17_GPIO			0				// GPIO17 - General purpose I/O 17 (default) (I/O)
+#define GPAMUX2_GPIO17_SPISOMIA		(1<<2)  		// SPISOMIA - SPI-A slave-out, master-in (I/O)
+#define GPAMUX2_GPIO17_TZ3			(3<<2)			// TZ3 - Trip zone 3 (I)
+
+#define GPAMUX2_GPIO16_MASK			(3<<0)			// GPIO16 - General purpose I/O 16 (default) (I/O)
+#define GPAMUX2_GPIO16_SPISIMOA		(1<<0)  		// SPISIMOA - SPI-A slave-in, master-out (I/O),
+#define GPAMUX2_GPIO16_TZ2			(3<<0)			// TZ2 - Trip zone 2 (I)
 
 #define GPADIR 						RA32(0x6F8A)	// GPIO A Direction Register (GPIO0-GPIO31)
 
@@ -457,8 +466,8 @@ extern cregister volatile unsigned int IER;
 
 #define GPAPUD 						RA32(0x6F8C)	// GPIO A Pull Up Disable Register (GPIO0-GPIO31)
 													
-#define GPAPUD_ENABLE(io)			0				// enable port A pullup (GPIO32-GPIO38)
-#define GPAPUD_DISABLE(io)			GPA_MASK(io)	// disable port A pullup (GPIO32-GPIO38)
+#define GPAPUD_ENABLE(io)			0				// enable port A pullup (GPIO0-GPIO31)
+#define GPAPUD_DISABLE(io)			GPA_MASK(io)	// disable port A pullup (GPIO0-GPIO31)
 													
 #define GPBCTRL 					RA32(0x6F90)	// GPIO B Control Register (GPIO32-GPIO38)
 
@@ -466,7 +475,36 @@ extern cregister volatile unsigned int IER;
 
 #define GPBQSEL1 					RA32(0x6F92)	// GPIO B Qualifier Select 1 Register (GPIO32-GPIO38)
 #define GPBMUX1 					RA32(0x6F96)	// GPIO B MUX 1 Register (GPIO32-GPIO38)
-#define GPBDIR 						RA32(0x6F9A)	// GPIO B Direction Register (GPIO32-GPIO38)
+
+#define GPBMUX1_GPIO38_MASK			(3<<12)
+#define GPBMUX1_GPIO38_GPIO			0
+
+#define GPBMUX1_GPIO37_MASK			(3<<10)
+#define GPBMUX1_GPIO37_GPIO			0
+
+#define GPBMUX1_GPIO36_MASK			(3<<8)
+#define GPBMUX1_GPIO36_GPIO			0		
+
+#define GPBMUX1_GPIO35_MASK			(3<<6)
+#define GPBMUX1_GPIO35_GPIO			0
+
+#define GPBMUX1_GPIO34_MASK			(3<<4)
+#define GPBMUX1_GPIO34_GPIO			0				// GPIO 34 - general purpose I/O 34 (default)
+#define GPBMUX1_GPIO34_COMP2OUT		(1<<4)  		// COMP2OUT (O)
+
+#define GPBMUX1_GPIO33_MASK			(3<<2)
+#define GPBMUX1_GPIO33_GPIO			0				// GPIO 33 - general purpose I/O 33 (default)
+#define GPBMUX1_GPIO33_SCLA			(1<<2)  		// SCLA - I2C clock open drain bidirectional port (I/O)
+#define GPBMUX1_GPIO33_EPWMSYNCO	(2<<2)  		// EPWMSYNCO - External ePWM sync pulse output (O)
+#define GPBMUX1_GPIO33_ADCSOCBO		(3<<2)  		// ADCSOCBO - ADC start-of-conversion B (O)
+													  
+#define GPBMUX1_GPIO32_MASK			(3<<0)
+#define GPBMUX1_GPIO32_GPIO			0				// GPIO 32 - general purpose I/O 32 (default)
+#define GPBMUX1_GPIO32_SDAA			(1<<0)  		// SDAA - I2C data open drain bidirectional port (I/O)
+#define GPBMUX1_GPIO32_EPWMSYNCI	(2<<0)  		// EPWMSYNCI - External ePWM sync pulse input (I)
+#define GPBMUX1_GPIO32_ADCSOCAO		(3<<0)  		// ADCSOCAO - ADC start-of-conversion A (O)
+
+#define GPBDIR 						RA32(0x6F9A)	// GPIOOBBDirectiontRegist-conversioneBr(O) (GPIO32-GPIO38)
 													
 #define GPBDIR_INPUT(io)			0				// GPIO B input (GPIO32-GPIO38)
 #define GPBDIR_OUTPUT(io)			GPB_MASK(io)	// GPIO B output (GPIO32-GPIO38)
@@ -477,7 +515,56 @@ extern cregister volatile unsigned int IER;
 #define GPBPUD_DISABLE(io)			GPB_MASK(io)	// disable port B pullup (GPIO32-GPIO38)
 
 #define AIOMUX1 					RA32(0x6FB6)	// Analog, I/O MUX 1 register (AIO0 - AIO15)
+													//
+#define AIOMUX1_AIO14_MASK			(3<<28)
+#define AIOMUX1_AIO14_ENABLE		0
+#define AIOMUX1_AIO14_DISABLE		(3<<28)
+
+#define AIOMUX1_AIO12_MASK			(3<<24)
+#define AIOMUX1_AIO12_ENABLE		0
+#define AIOMUX1_AIO12_DISABLE		(3<<24)
+
+#define AIOMUX1_AIO10_MASK			(3<<20)
+#define AIOMUX1_AIO10_ENABLE		0
+#define AIOMUX1_AIO10_DISABLE		(3<<20)
+
+#define AIOMUX1_AIO6_MASK			(3<<12)
+#define AIOMUX1_AIO6_ENABLE			0
+#define AIOMUX1_AIO6_DISABLE		(3<<12)
+
+#define AIOMUX1_AIO4_MASK			(3<<8)
+#define AIOMUX1_AIO4_ENABLE			0
+#define AIOMUX1_AIO4_DISABLE		(3<<8)
+
+#define AIOMUX1_AIO2_MASK			(3<<4)
+#define AIOMUX1_AIO2_ENABLE			0
+#define AIOMUX1_AIO2_DISABLE		(3<<4)
+
 #define AIODIR 						RA32(0x6FBA)	// Analog, I/O Direction Register (AIO0 - AIO15) 
+
+#define AIODIR_AIO14_MASK			(1<<14)
+#define AIODIR_AIO14_INPUT			0
+#define AIODIR_AIO14_DISABLE		(1<<14)
+
+#define AIODIR_AIO12_MASK			(1<<12)
+#define AIODIR_AIO12_INPUT			0
+#define AIODIR_AIO12_DISABLE		(1<<12)
+
+#define AIODIR_AIO10_MASK			(1<<10)
+#define AIODIR_AIO10_INPUT			0
+#define AIODIR_AIO10_DISABLE		(1<<10)
+
+#define AIODIR_AIO6_MASK			(1<<6)
+#define AIODIR_AIO6_INPUT			0
+#define AIODIR_AIO6_DISABLE			(1<<6)
+
+#define AIODIR_AIO4_MASK			(1<<4)
+#define AIODIR_AIO4_INPUT			0
+#define AIODIR_AIO4_DISABLE			(1<<4)
+
+#define AIODIR_AIO2_MASK			(1<<2)
+#define AIODIR_AIO2_INPUT			0
+#define AIODIR_AIO2_DISABLE			(1<<2)
 
 #define GPASET						RA32(0x006FC2)
 #define GPBSET						RA32(0x006FCA)
@@ -491,29 +578,29 @@ extern cregister volatile unsigned int IER;
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-#define WDCR			RA(0x007029)
+#define WDCR						RA(0x007029)
 
-#define WDCR_WDFLAG_MASK		(1<<7)
-#define WDCR_WDFLAG_POWER_ON	(0)
-#define WDCR_WDFLAG_WATCHDOG	(1<<7)
+#define WDCR_WDFLAG_MASK			(1<<7)
+#define WDCR_WDFLAG_POWER_ON		(0) 
+#define WDCR_WDFLAG_WATCHDOG		(1<<7)
 
-#define WDCR_WDDIS_MASK			(1<<6)
-#define WDCR_WDDIS_DISABLE		(1<<6)
-#define WDCR_WDDIS_ENABLE		0
+#define WDCR_WDDIS_MASK				(1<<6)
+#define WDCR_WDDIS_DISABLE			(1<<6)
+#define WDCR_WDDIS_ENABLE			0   
 
-#define WDCR_WDCHK_MASK			(7<<3)
-#define WDCR_WDCHK_KEY			(5<<3)
-#define WDCR_WDCHK_RESET		0
+#define WDCR_WDCHK_MASK				(7<<3)
+#define WDCR_WDCHK_KEY				(5<<3)
+#define WDCR_WDCHK_RESET			0   
 
-#define WDCR_WDPS_MASK			(7<<0)
-#define WDCR_WDPS_DIV512		0
-#define WDCR_WDPS_DIV256		1
-#define WDCR_WDPS_DIV128		2
-#define WDCR_WDPS_DIV64			3
-#define WDCR_WDPS_DIV32			4
-#define WDCR_WDPS_DIV16			5
-#define WDCR_WDPS_DIV8			6
-#define WDCR_WDPS_DIV4			7
+#define WDCR_WDPS_MASK				(7<<0)
+#define WDCR_WDPS_DIV512			0   
+#define WDCR_WDPS_DIV256			1   
+#define WDCR_WDPS_DIV128			2   
+#define WDCR_WDPS_DIV64				3   
+#define WDCR_WDPS_DIV32				4   
+#define WDCR_WDPS_DIV16				5   
+#define WDCR_WDPS_DIV8				6   
+#define WDCR_WDPS_DIV4				7   
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///  FLASH
