@@ -92,15 +92,15 @@ extern cregister volatile unsigned int IER;
 
 #define XCLK	RA(0x007010)
 
-#define XCLK_XCLKINSEL_MASK		(1<<6)
-#define XCLK_XCLKINSEL_GPIO38	0
-#define XCLK_XCLKINSEL_GPIO19	(1<<6)
+#define XCLK_XCLKINSEL_MASK			(1<<6)
+#define XCLK_XCLKINSEL_GPIO38		0
+#define XCLK_XCLKINSEL_GPIO19		(1<<6)
 
-#define XCLK_XCLKOUTDIV_MASK	(3<<0)
-#define XCLK_XCLKOUTDIV_DIV4	(0<<0)
-#define XCLK_XCLKOUTDIV_DIV2	(1<<0)
-#define XCLK_XCLKOUTDIV_DIV1	(2<<0)
-#define XCLK_XCLKOUTDIV_OFF		(3<<0)
+#define XCLK_XCLKOUTDIV_MASK		(3<<0)
+#define XCLK_XCLKOUTDIV_DIV4		(0<<0)
+#define XCLK_XCLKOUTDIV_DIV2		(1<<0)
+#define XCLK_XCLKOUTDIV_DIV1		(2<<0)
+#define XCLK_XCLKOUTDIV_OFF			(3<<0)
 
 #define PLLSTS	RA(0x007011)
 
@@ -990,7 +990,37 @@ extern cregister volatile unsigned int IER;
 #define DCFWINDOWCNT(i)	RA(((i)-1)*0x40+0x6838)		// Digital Compare Filter Window Counter Register
 #define DCCAP(i)		RA(((i)-1)*0x40+0x6839)		// Digital Compare Counter Capture Register
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//	GPIO INTERRUPT
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#define XINT1CR			RA(0x007070)				// XINT1 configuration register
+#define XINT2CR			RA(0x007071)				// XINT2 configuration register
+#define XINT3CR			RA(0x007072)				// XINT3 configuration register
+
+#define XINTCR_POLARITY_MASK		(3<<2)			// This read/write bit determines whether interrupts are generated on the rising edge or the
+													// falling edge of a signal on the pin.
+#define XINTCR_POLARITY_FALLING		(0)				// Interrupt generated on a falling edge (high-to-low transition)
+#define XINTCR_POLARITY_RISING		(1<<2)			// Interrupt generated on a rising edge (low-to-high transition)
+#define XINTCR_POLARITY_BOTH		(3<<2)			// Interrupt generated on both a falling edge and a rising edge (high-to-low and low-to-high transition)
+
+#define XINTCR_INTERRUPT_MASK		1				// This read/write bit enables or disables external interrupt XINTn.
+#define XINTCR_INTERRUPT_ENABLE		1
+#define XINTCR_INTERRUPT_DISABLE	0
+
+#define XINT1CTR		RA(0x007078)				// XINT1 configuration register
+#define XINT2CTR		RA(0x007079)				// XINT2 configuration register
+#define XINT3CTR		RA(0x00707A)				// XINT3 configuration register
+
+#define GPIOXINT1SEL	RA(0x6FE0)					// XINT1 Source Select Register (GPIO0-GPIO31)
+#define GPIOXINT2SEL	RA(0x6FE1)					// XINT2 Source Select Register (GPIO0-GPIO31)
+#define GPIOXINT3SEL	RA(0x6FE2)					// XINT3 Source Select Register (GPIO0-GPIO31)
+
+#define GPIOXINTSEL_GPIO(i)		(i)					// Select the port A GPIO signal (GPIO0 - GPIO31) that will be used as the XINT1, XINT2, or
+													// XINT3 interrupt source. In addition, you can configure the interrupt in the XINT1CR, XINT2CR,
+													// or XINT3CR registers described in Section 6.6.
+													// To use XINT2 as ADC start of conversion, enable it in the desired ADCSOCxCTL register.
+													// The ADCSOC signal is always rising edge sensitive.
 typedef void interrupt (*PISR)(void);
 
 #define IV_TIMER1		13

@@ -96,29 +96,15 @@ PAGE 1 :   /* Data Memory */
  //  PIE_IVT		: origin = 0x0D00, length = 0x200		/* PIE interrupt vector table area */
 }
 
-/* Allocate sections to memory blocks.
-   Note:
-         codestart user defined section in DSP28_CodeStartBranch.asm used to redirect code
-                   execution when booting to flash
-         ramfuncs  user defined section to store functions that will be copied from Flash into RAM
-*/
-
 SECTIONS
 {
-/*
-	FASTlib_public : load = FLASHA_D  PAGE = 0
-		 {
-            -lfast_public.lib(.econst)
-            -lfast_public.lib(.text)
-		 }
-*/
+
    //userfuncs           : > RAMUSER     PAGE = 0
 
    /* Allocate program areas: */
    .cinit              : > FLASHA_D     PAGE = 1
    .pinit              : > FLASHA_D,    PAGE = 1
    .text               : > FLASHA_D     PAGE = 1
-   codestart           : > BEGIN        PAGE = 0
    ramfuncs            : LOAD = FLASHA_D,
                          RUN = P_DRAML0,
                          LOAD_START(_RamfuncsLoadStart),

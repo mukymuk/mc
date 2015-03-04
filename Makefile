@@ -12,7 +12,7 @@ MKDIR := .
 
 ARCH_FLAGS=-v28 -ml -mt -O2 -g --define=FLASH --diag_warning=225 --display_error_number
 LDFLAGS=$(ARCH_FLAGS) -i"$(TOOLCHAIN)/lib" -z -m"$(OUTDIR)/$(basename $(TARGET)).map" --stack_size=0x200 --warn_sections --reread_libs --priority --disable_auto_rts --diag_suppress=16002 --rom_model -l"rts2800_ml.lib"
-CFLAGS=$(ARCH_FLAGS) -i"$(TOOLCHAIN)/include"
+CFLAGS=$(ARCH_FLAGS) -DCFG=${CFG} -i"$(TOOLCHAIN)/include"
 INCS=-I.
 
 SRCS := $(wildcard *.c)
@@ -29,21 +29,19 @@ $(OUTDIR)/%.o: %.asm
 $(OUTDIR)/%.o: %.c
 	$(CC) $(CFLAGS) $(INCS) --output_file="$@" -c $<
 
-$(OUTDIRS):
-	@mkdir -p $(OUTDIRS)
-
 OBJS := $(SRCS:.c=.o)
 OBJS := $(OBJS:.asm=.o)
 OBJS := $(addprefix ./$(OUTDIR)/,$(OBJS))
 
 $(OUTDIR)/$(TARGET): $(OBJS)
-	$(LD) $(INCS) $(LDFLAGS) -e=code_start --output_file="$@" $(OBJS) $(CMDS)
+	$(LD) $(INCS) $(LDFLAGS) --output_file="$@" $(OBJS) $(CMDS)
 
 depend:
 	makedepend -f$(OUTDIR)/deps -Y$(TOOLCHAIN)/include -p$(OUTDIR)/ -- $(CFLAGS) -- $(SRCS)
 
 $(OUTDIR)/deps:
-	touch $(OUTDIR)/deps
+	@mkdir -p $(OUTDIRS)
+	@touch $(OUTDIR)/deps
 	make depend CFG=$(CFG)
 
 all:	$(OUTDIRS) $(OUTDIR)/$(TARGET) $(OUTDIR)/$(TARGET) $(OUTDIR)/deps
