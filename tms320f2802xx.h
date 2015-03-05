@@ -1020,8 +1020,7 @@ extern cregister volatile unsigned int IER;
 													// XINT3 interrupt source. In addition, you can configure the interrupt in the XINT1CR, XINT2CR,
 													// or XINT3CR registers described in Section 6.6.
 													// To use XINT2 as ADC start of conversion, enable it in the desired ADCSOCxCTL register.
-													// The ADCSOC signal is always rising edge sensitive.
-typedef void interrupt (*PISR)(void);
+													//  The ADCSOC signal is always rising edge sensitive.
 
 #define IV_TIMER1		13
 #define IV_TIMER2		14
@@ -1074,4 +1073,286 @@ typedef void interrupt (*PISR)(void);
 #define IV_ADCINT7		110
 #define IV_ADCINT8		111
 #define IV_XINT3		120
+
+typedef void interrupt(*PISR)(void)
+;
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///  SPI
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#define SPICCR						RA(0x007040)	// SPI-A Configuration Control Register
+
+#define SPICCR_RESET_MASK			(1<<7)			// SPI software reset. When changing configuration, you should clear this bit before the changes and
+													// set this bit before resuming operation.
+#define SPICCR_RESET_ENABLE			0				// Initializes the SPI operating flags to the reset condition. Specifically, the RECEIVER OVERRUN
+													// Flag bit (SPISTS.7), the SPI INT FLAG bit (SPISTS.6), and the TXBUF FULL Flag bit (SPISTS.5)
+													// are cleared. The SPI configuration remains unchanged. If the module is operating as a master, the
+													// SPICLK signal output returns to its inactive level.
+#define SPICCR_RESET_DISABLE		(1<<7)			// SPI is ready to transmit or receive the next character. When the SPI SW RESET bit is a 0, a
+													// character written to the transmitter will not be shifted out when this bit is set. A new character must
+													// 
+#define SPICCR_CLOCK_POLARITY_MASK 	(1<<6)			// Shift Clock Polarity. This bit controls the polarity of the SPICLK signal. CLOCK POLARITY and
+													// CLOCK PHASE (SPICTL.3) control four clocking schemes on the SPICLK pin. See Section 1.5.3.
+													// 
+#define SPICCR_CLOCK_POLARITY_RISING 0				// Data is output on rising edge and input on falling edge. When no SPI data is sent, SPICLK is at low
+													// level. The data input and output edges depend on the value of the CLOCK PHASE bit (SPICTL.3)
+													// as follows:
+													// • CLOCK PHASE = 0: Data is output on the rising edge of the SPICLK signal; input data is latched
+													// on the falling edge of the SPICLK signal.
+													// • CLOCK PHASE = 1: Data is output one half-cycle before the first rising edge of the SPICLK
+													// signal and on subsequent falling edges of the SPICLK signal; input data is latched on the rising
+													// edge of the SPICLK signal.
+													// 
+#define SPICCR_CLOCK_POLARITY_FALING	(1<<6)		//  Data is output on falling edge and input on rising edge. When no SPI data is sent, SPICLK is at
+													//  high level. The data input and output edges depend on the value of the CLOCK PHASE bit
+													// (SPICTL.3) as follows:
+													// • CLOCK PHASE = 0: Data is output on the falling edge of the SPICLK signal; input data is
+													// latched on the rising edge of the SPICLK signal.
+													// • CLOCK PHASE = 1: Data is output one half-cycle before the first falling edge of the SPICLK
+													// signal and on subsequent rising edges of the SPICLK signal; input data is latched on the falling
+													// edge of the SPICLK signal.
+#define SPICCR_SPILBK_MASK				(1<<4)		// SPI loopback. Loop back mode allows module validation during device testing. This mode is valid
+													// only in master mode of the SPI.
+
+
+#define SPICCR_SPILBK_DISABLE			0			// SPI loop back mode disabled – default value after reset
+
+
+#define SPICCR_SPILBK_ENABLE			(1<<4)		// SPI loop back mode enabled, SIMO/SOMI lines are connected internally. Used for module self
+													// tests.
+
+#define SPICCR_CHARLEN_MASK				(4<<0)		// Character Length Control Bits 3-0. These four bits determine the number of bits to be shifted in or
+													// out as a single character during one shift sequence. Table 8 lists the character length selected by
+													// the bit values.
+													// `
+#define SPICCR_CHARLEN(i)				((i)-1)		// number of bits (1-16) to be shifted in or out as a single character during one shift sequence.
+
+#define SPICTL						RA(0x007041)	// SPI-A Operation Control Register
+
+#define SPICTL_OVERRUN_MASK			(1<<4)			// overrun Interrupt Enable. Setting this bit causes an interrupt to be generated when the RECEIVER
+													// OVERRUN Flag bit (SPISTS.7) is set by hardware. Interrupts generated by the RECEIVER
+													// OVERRUN Flag bit and the SPI INT FLAG bit (SPISTS.6) share the same interrupt vector.
+
+#define SPICTL_OVERRUN_ENABLE		(1<<4)			// Enable RECEIVER OVERRUN Flag bit (SPISTS.7) interrupts
+
+#define SPICTL_OVERRUN_DISABLE		0				// Disable RECEIVER OVERRUN Flag bit (SPISTS.7) interrupts
+
+
+#define SPICTL_CLOCK_PHASE_MASK	(1<<3)				// SPI Clock Phase Select. This bit controls the phase of the SPICLK signal.
+													// CLOCK PHASE and CLOCK POLARITY (SPICCR.6) make four different clocking schemes
+													// possible (see Figure 4). When operating with CLOCK PHASE high, the SPI (master or slave)
+													// makes the first bit of data available after SPIDAT is written and before the first edge of the SPICLK
+													// signal, regardless of which SPI mode is being used.
+#define SPICTL_CLOCK_PHASE_NORMAL	0				// Normal SPI clocking scheme, depending on the CLOCK POLARITY bit (SPICCR.6)
+#define SPICTL_CLOCK_PHASE_DELAY	(1<<3)			// SPICLK signal delayed by one half-cycle; polarity determined by the CLOCK POLARITY bit
+
+#define SPICTL_MODE_MASK			(1<<2)			// SPI Network Mode Control. This bit determines whether the SPI is a network master or slave.
+													// During reset initialization, the SPI is automatically configured as a network slave.
+#define SPICTL_MODE_MASTER			(1<<2)			// SPI configured as a master.
+#define SPICTL_MODE_SLAVE			0				// SPI configured as a slave.
+
+#define SPICTL_TALK_MASK			(1<<1)			// Master/Slave Transmit Enable. The TALK bit can disable data transmission (master or slave) by
+													// placing the serial data output in the high-impedance state. If this bit is disabled during a
+													// transmission, the transmit shift register continues to operate until the previous character is shifted
+													// out. When the TALK bit is disabled, the SPI is still able to receive characters and update the status
+													// flags. TALK is cleared (disabled) by a system reset.
+#define SPICTL_TALK_DISABLE		0					// Disables transmission:
+													// • Slave mode operation: If not previously configured as a general-purpose I/O pin, the SPISOMI
+													//   pin will be put in the high-impedance state.
+													// • Master mode operation: If not previously configured as a general-purpose I/O pin, the SPISIMO
+													//   pin will be put in the high-impedance state.
+#define SPICTL_TALK_ENABLE			(1<<1)			// Enables transmission For the 4-pin option, ensure to enable the receiver’s SPISTE input pin.
+
+#define SPICTL_INT_MASK				(1<<0)			// SPI Interrupt Enable. This bit controls the SPI’s ability to generate a transmit/receive interrupt. The
+													// SPI INT FLAG bit (SPISTS.6) is unaffected by this bit.
+
+#define SPICTL_INT_ENABLE			(1<<0)			// Enables interrupt
+#define SPICTL_INT_DISABLE			0				// Disables interrupt
+
+#define SPIST						RA(0x007042)	// SPI-A Status Register
+
+#define SPIST_OVERRUN_MASK			(1<<7)			// SPI Receiver Overrun Flag. This bit is a read/clear-only flag. The SPI hardware sets this bit when a
+													// receive or transmit operation completes before the previous character has been read from the
+													// buffer. The bit indicates that the last received character has been overwritten and therefore lost
+													// (when the SPIRXBUF was overwritten by the SPI module before the previous character was read
+													// by the user application). The SPI requests one interrupt sequence each time this bit is set if the
+													// OVERRUN INT ENA bit (SPICTL.4) is set high. The bit is cleared in one of three ways:
+													// • Writing a 1 to this bit
+													// • Writing a 0 to SPI SW RESET (SPICCR.7)
+													// • Resetting the system
+													// If the OVERRUN INT ENA bit (SPICTL.4) is set, the SPI requests only one interrupt upon the first
+													// occurrence of setting the RECEIVER OVERRUN Flag bit. Subsequent overruns will not request
+													// additional interrupts if this flag bit is already set. This means that in order to allow new overrun
+													// interrupt requests the user must clear this flag bit by writing a 1 to SPISTS.7 each time an overrun
+													// condition occurs. In other words, if the RECEIVER OVERRUN Flag bit is left set (not cleared) by
+													// the interrupt service routine, another overrun interrupt will not be immediately re-entered when the
+													// interrupt service routine is exited.
+#define SPIST_OVERRUN_CLEAR			(1<<7)			// Clears this bit. The RECEIVER OVERRUN Flag bit should be cleared during the interrupt service
+													// routine because the RECEIVER OVERRUN Flag bit and SPI INT FLAG bit (SPISTS.6) share the
+													// same interrupt vector. This will alleviate any possible doubt as to the source of the interrupt when
+													// the next byte is received.
+#define SPIST_INT_FLAG				(1<<6)			// SPI Interrupt Flag. SPI INT FLAG is a read-only flag. The SPI hardware sets this bit to indicate that
+													// it has completed sending or receiving the last bit and is ready to be serviced. The received
+													// character is placed in the receiver buffer at the same time this bit is set. This flag causes an
+													// interrupt to be requested if the SPI INT ENA bit (SPICTL.0) is set.
+													// Writing a 0 has no effect
+													// This bit is cleared in one of three ways:
+													// • Reading SPIRXBUF
+													// • Writing a 0 to SPI SW RESET (SPICCR.7)
+													// • Resetting the system
+#define SPIST_TX_FULL_FLAG			(1<<5)			// SPI Transmit Buffer Full Flag. This read-only bit gets set to 1 when a character is written to the SPI
+													// Transmit buffer SPITXBUF. It is cleared when the character is automatically loaded into SPIDAT
+													// when the shifting out of a previous character is complete.
+#define SPIBRR						RA(0x007044)	// SPI-A Baud Rate Register
+													// SPI Bit Rate (Baud) Control. These bits determine the bit transfer rate if the SPI is the network
+													// master. There are 125 data-transfer rates (each a function of the CPU clock, LSPCLK) that can be
+													// selected. One data bit is shifted per SPICLK cycle. (SPICLK is the baud rate clock output on the
+													// SPICLK pin.)
+													// If the SPI is a network slave, the module receives a clock on the SPICLK pin from the network
+													// master; therefore, these bits have no effect on the SPICLK signal. The frequency of the input clock
+													// from the master should not exceed the slave SPI’s SPICLK signal divided by 4.
+													// In master mode, the SPI clock is generated by the SPI and is output on the SPICLK pin. The SPI
+													// baud rates are determined by the following formula:
+													// For SPIBRR = 3 to 127:
+													//   SPI Baud Rate = LSPCLK / (SPIBRR+1)
+													// For SPIBRR = 0, 1, or 2:
+													//   SPI Baud Rate = LSPCLK / 4
+													// where: LSPCLK = Function of CPU clock frequency X low-speed peripheral clock of the device
+													// SPIBRR = Contents of the SPIBRR in the master SPI device
+#define SPIRXEMU					RA(0x0070460)	// Emulation Buffer Received Data. SPIRXEMU functions almost identically to SPIRXBUF, except that
+													// reading SPIRXEMU does not clear the SPI INT FLAG bit (SPISTS.6). Once the SPIDAT has
+													// received the complete character, the character is transferred to SPIRXEMU and SPIRXBUF, where
+													// it can be read. At the same time, SPI INT FLAG is set.
+													// This mirror register was created to support emulation. Reading SPIRXBUF clears the SPI INT
+													// FLAG bit (SPISTS.6). In the normal operation of the emulator, the control registers are read to
+													// continually update the contents of these registers on the display screen. SPIRXEMU was created
+													// so that the emulator can read this register and properly update the contents on the display screen.
+													// Reading SPIRXEMU does not clear the SPI INT FLAG bit, but reading SPIRXBUF clears this flag.
+													// In other words, SPIRXEMU enables the emulator to emulate the true operation of the SPI more
+													// accurately.
+													// It is recommended that you view SPIRXEMU in the normal emulator run mode.
+#define SPIRXBUF					RA(0x007047)	// Received Data. Once SPIDAT has received the complete character, the character is transferred to
+													// SPIRXBUF, where it can be read. At the same time, the SPI INT FLAG bit (SPISTS.6) is set. Since
+													// data is shifted into the SPI’s most significant bit first, it is stored right-justified in this register.
+
+#define	SPITXBUF					RA(0x007048)	// Transmit Data Buffer. This is where the next character to be transmitted is stored. When the
+													// transmission of the current character has completed, if the TX BUF FULL Flag bit is set, the
+													// contents of this register is automatically transferred to SPIDAT, and the TX BUF FULL Flag is
+													// cleared.  Writes to SPITXBUF must be left-justified.
+#define SPIDAT						RA(0x007049)	// Serial data. Writing to the SPIDAT performs two functions:
+													// • It provides data to be output on the serial output pin if the TALK bit (SPICTL.1) is set.
+													// • When the SPI is operating as a master, a data transfer is initiated. When initiating a transfer, see
+													// the CLOCK POLARITY bit (SPICCR.6) described in Section 2.1.1 and the CLOCK PHASE bit
+													// (SPICTL.3) described in Section 2.1.2, for the requirements.
+													// In master mode, writing dummy data to SPIDAT initiates a receiver sequence. Since the data is not
+													// hardware-justified for characters shorter than sixteen bits, transmit data must be written in
+													// left-justified form, and received data read in right-justified form.
+#define SPIFFTX						RA(0x00704A)	// SPI-A FIFO Transmit Register
+#define SPIFFTX_SPIRST_MASK			(1<<15)			// SPI reset
+#define SPIFFTX_SPIRST_RESET		0				// Write 0 to reset the SPI transmit and receive channels. The SPI FIFO register configuration bits will
+													// be left as is.
+#define SPIFFTX_SPIRST_RESUME		(1<<15) 		// SPI FIFO can resume transmit or receive. No effect to the SPI registers bits.
+
+#define SPIFFTX_SPIFFENA_MASK		(1<<14)			// SPI FIFO enhancements
+#define SPIFFTX_SPIFFENA_DISABLE	0				// SPI FIFO enhancements are disabled
+#define SPIFFTX_SPIFFENA_ENABLE		(1<<14)			// SPI FIFO enhancements are enabled
+
+#define SPIFFTX_TXFIFO_RESET_MASK	(1<<13)
+#define SPIFFTX_TXFIFO_RESET		0				// Write 0 to reset the FIFO pointer to zero, and hold in reset.
+#define SPIFFTX_TXFIFO_RESUME		(1<<13)			// Re-enable Transmit FIFO operation
+
+#define SPIFFTX_TXFIFO_STATUS_MASK	(0x1F<<8)		// Transmit FIFO status
+#define SPIFFTX_TXFIFO_STATUS_0		(0<<8)  		// Transmit FIFO is empty.
+#define SPIFFTX_TXFIFO_STATUS_1		(1<<8)  		// Transmit FIFO has 1 word.
+#define SPIFFTX_TXFIFO_STATUS_2		(2<<8)  		// Transmit FIFO has 2 words.
+#define SPIFFTX_TXFIFO_STATUS_3		(3<<8)  		// Transmit FIFO has 3 words.
+#define	SPIFFTX_TXFIFO_STATUS_4		(4<<8)			// Transmit FIFO has 4 words, which is the maximum.
+
+#define	SPIFFTX_TXFFINT_FLAG		(1<<7)			// TXFIFO interrupt has occurred, This is a read-only bit.
+#define	SPIFFTX_TXFFINT_CLEAR		(1<<6)			// Write 1 to clear TXFFINT flag in bit 7.
+
+#define	SPIFFTX_TXFFIENA_MASK		(1<<5)			// TX FIFO interrupt enable
+#define	SPIFFTX_TXFFIENA_ENABLE		(1<<5)  		// TX FIFO interrupt based on TXFFIVL match (less than or equal to) will be disabled .
+#define	SPIFFTX_TXFFIENA_DISABLE	0   			// TX FIFO interrupt based on TXFFIVL match (less than or equal to) will be enabled.
+
+#define SPIFFTX_TXFFIL_MASK			(0x1F)			// TXFFIL4-0 transmit FIFO interrupt level bits. Transmit FIFO will generate interrupt when the FIFO
+													// status bits (TXFFST4?0) and FIFO level bits (TXFFIL4?0 ) match (less than or equal to).
+#define SPIFFTX_TXFFIL(i)			(i)				// (0-4)
+
+#define SPIFFRX						RA(0x00704B)	// SPI-A FIFO Receive Register
+
+#define SPIFFRX_RXFFOVF_FLAG		(1<<15)			// Receive FIFO has overflowed, read-only bit. More than 16 words have been received in to the
+													// FIFO, and the first received word is lost.
+#define SPIFFRX_RXFFOVF_CLEAR		(1<<14)			// Write 1 to clear RXFFOVF flag in bit 15
+
+#define SPIFFRX_RXFIFO_RESET_MASK	(1<<13)
+#define SPIFFRX_RXFIFO_RESET		0				// Write 0 to reset the FIFO pointer to zero, and hold in reset.
+#define SPIFFRX_RXFIFO_RESUME		(1<<13)			// Re-enable receive FIFO operation
+
+#define SPIFFRX_RXFIFO_STATUS_MASK	(0x1F<<8)		// Receive FIFO status
+#define SPIFFRX_RXFIFO_STATUS_0		(0<<8)  		// Receive FIFO is empty.
+#define SPIFFRX_RXFIFO_STATUS_1		(1<<8)  		// Receive FIFO has 1 word.
+#define SPIFFRX_RXFIFO_STATUS_2		(2<<8)  		// Receive FIFO has 2 words.
+#define SPIFFRX_RXFIFO_STATUS_3		(3<<8)  		// Receive FIFO has 3 words.
+#define	SPIFFRX_RXFIFO_STATUS_4		(4<<8)			// Receive FIFO has 4 words, which is the maximum.
+
+#define	SPIFFRX_RXFFINT_FLAG		(1<<7)			// RXFIFO interrupt has occurred, This is a read-only bit.
+#define	SPIFFRX_RXFFINT_CLEAR		(1<<6)			// Write 1 to clear RXFFINT flag in bit 7.
+
+#define	SPIFFRX_RXFFIENA_MASK		(1<<5)			// RX FIFO interrupt enable
+#define	SPIFFRX_RXFFIENA_ENABLE		(1<<5)  		// RX FIFO interrupt based on RXFFIVL match (less than or equal to) will be disabled .
+#define	SPIFFRX_RXFFIENA_DISABLE	0   			// RX FIFO interrupt based on RXFFIVL match (less than or equal to) will be enabled.
+
+#define SPIFFRX_RXFFIL_MASK			(0x1F)			// RXFFIL4-0 receive FIFO interrupt level bits. Receive FIFO will generate interrupt when the FIFO
+													// status bits (RXFFST4-0) and FIFO level bits (RXFFIL4-0 ) match (less than or equal to).
+#define SPIFFRX_RXFFIL(i)			(i)				// (0-4)
+
+#define SPIFFCT						RA(0x00704C)	// FIFO transmit delay bits
+													// These bits define the delay between every transfer from FIFO transmit buffer to transmit shift
+													// register. The delay is defined in number SPI serial clock cycles. The 8-bit register could define a
+													// minimum delay of 0 serial clock cycles and a maximum of 255 serial clock cycles.
+													// In FIFO mode, the buffer (TXBUF) between the shift register and the FIFO should be filled only
+													// after the shift register has completed shifting of the last bit. This is required to pass on the delay
+													// between transfers to the data stream. In the FIFO mode TXBUF should not be treated as one
+													// additional level of buffer.
+#define SPIPRI						RA(0x00704F) 	// SPI-A Priority Control Register
+
+#define SPIPRI_SUSPEND_MASK			(3<<4)			// These bits determine what occurs when an emulation suspend occurs (for example, when the
+													// debugger hits a breakpoint). The peripheral can continue whatever it is doing (free-run mode) or, if in
+													// stop mode, it can either stop immediately or stop when the current operation (the current
+													// receive/transmit sequence) is complete.
+
+#define SPIPRI_SUSPEND_STOP			0				// Transmission stops after midway in the bit stream while TSUSPEND is asserted. Once TSUSPEND
+													// is deasserted without a system reset, the remainder of the bits pending in the DATBUF are shifted.
+													// Example: If SPIDAT has shifted 3 out of 8 bits, the communication freezes right there. However, if
+													// TSUSPEND is later deasserted without resetting the SPI, SPI starts transmitting from where it had
+													// stopped (fourth bit in this case) and will transmit 8 bits from that point. The SCI module operates
+													// differently.
+
+#define SPIPRI_SUSPEND_FINISH		(2<<4)			// If the emulation suspend occurs before the start of a transmission, (i.e., before the first SPICLK
+													// pulse) then the transmission will not occur. If the emulation suspend occurs after the start of a
+													// transmission, then the data will be shifted out to completion. When the start of transmission occurs is
+													// dependent on the baud rate used.
+													// Standard SPI mode: Stop after transmitting the words in the shift register and buffer. That is, after
+													// TXBUF and SPIDAT are empty.
+													// In FIFO mode: Stop after transmitting the words in the shift register and buffer. That is, after TX FIFO
+													// and SPIDAT are empty.
+
+#define SPIPRI_SUSPEND_FREERUN		(1<<4)			// Free run, continue SPI operation regardless of suspend or when the suspend occurred.
+
+#define SPIPRI_STEINV_MASK			(1<<1)			// SPISTE inversion bit (Not available on TMS320x2802x devices).
+													// On devices with 2 SPI modules, inverting the SPISTE signal on one of the modules allows the device
+													// to receive left and right- channel digital audio data.
+#define SPIPRI_STEINV_ACTIVELOW		0				// SPISTE is active low (normal)
+#define SPIPRI_STEINV_ACTIVEHIGH	(1<<1)			// SPISTE is active high (inverted)
+
+#define SPIPRI_TRIWIRE_MASK			(1<<0)			// SPI 3-wire mode enable
+#define SPIPRI_TRIWIRE_ENABLE		(1<<0)			// 3-wire SPI mode enabled. The unused pin becomes a GPIO pin. In master mode, the SPISIMO pin
+													// becomes the SPIMOMI (master receive and transmit) pin and SPISOMI is free for non-SPI use. In
+													// slave mode, the SIISOMI pin becomes the SPISISO (slave receive and transmit) pin and SPISIMO is
+													// free for non-SPI use.
+#define SPIPRI_TRIWIRE_DISABLE		0				// Normal 4-wire SPI mode
 
