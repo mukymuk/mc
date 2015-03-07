@@ -10,7 +10,7 @@ CMDS = F28027F.cmd
 
 MKDIR := .
 
-ARCH_FLAGS=-v28 -ml -mt -O2 -g --define=FLASH --diag_warning=225 --display_error_number
+ARCH_FLAGS=-v28 -ml -mt -O0 -g --define=FLASH --diag_warning=225 --display_error_number
 LDFLAGS=$(ARCH_FLAGS) -i"$(TOOLCHAIN)/lib" -z -m"$(OUTDIR)/$(basename $(TARGET)).map" --stack_size=0x200 --warn_sections --reread_libs --priority --disable_auto_rts --diag_suppress=16002 --rom_model -l"rts2800_ml.lib"
 CFLAGS=$(ARCH_FLAGS) -DCFG=${CFG} -i"$(TOOLCHAIN)/include"
 INCS=-I.

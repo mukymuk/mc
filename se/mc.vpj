@@ -151,6 +151,7 @@
 	</CustomFolders>
 	<Files AutoFolders="DirectoryView">
 		<Folder Name="../">
+			<F N="../drv8301.c"/>
 			<F N="../drv8301.h"/>
 			<F N="../F28027F.cmd"/>
 			<F N="../main.c"/>

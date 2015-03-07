@@ -1,25 +1,20 @@
-#include <stdint.h>
+#include "global.h"
 #include "tms320f2802xx.h"
+#include "drv8301_reg.h"
+#include "drv8301.h"
 
 #ifndef CFG
 #define CFG Debug
 #endif
-
 
 #ifdef FLASH
 extern uint16_t RamfuncsLoadStart;
 extern uint16_t RamfuncsLoadSize;
 extern uint16_t RamfuncsRunStart;
 #endif
-
 extern uint16_t InitOnlyLoadStart;
 extern uint16_t InitOnlyLoadSize;
 extern uint16_t InitOnlyRunStart;
-
-void interrupt isr_stub( void )
-{
-	ESTOP0();
-}
 
 #pragma CODE_SECTION(flash_config,"ramfuncs")
 static void flash_config( void )
@@ -30,6 +25,12 @@ static void flash_config( void )
 	FOPT = FOPT_ENPIPE_ENABLE;
 	while( delay-- );
 }
+
+void interrupt isr_stub( void )
+{
+	ESTOP0();
+}
+
 
 /*
 #pragma CODE_SECTION(isr_cpu_timer2,"ramfuncs")
@@ -55,156 +56,6 @@ void interrupt isr_cpu_timer2( void )
 	CMPA(1) = cmp;
 }
 */
-
-#pragma CODE_SECTION(s3_button_isr,"ramfuncs")
-void interrupt s3_button_isr( void )
-{
-	PIEACK = PIEACK_INT1;
-}
-
-static void drv8301_init( void )
-{
-	GPAMUX1 =   GPAMUX1_GPIO0_EPWM1A |		// PWM_AH / D2
-				GPAMUX1_GPIO1_EPWM1B |		// PWM_AL / D4
-				GPAMUX1_GPIO2_EPWM2A |		// PWM_BH / D3
-				GPAMUX1_GPIO3_EPWM2B |		// PWM_BL / D5
-				GPAMUX1_GPIO4_EPWM3A |		// PWM_CH
-				GPAMUX1_GPIO5_EPWM3B |		// PWM_CL
-				GPAMUX1_GPIO6_GPIO |		// EN_GATE (output)
-				GPAMUX1_GPIO7_GPIO |		// DC_CAL (output)
-				GPAMUX1_GPIO12_GPIO;		// S3
-
-	GPAMUX2 = 	
-				GPAMUX2_GPIO16_SPISIMOA |	// M_OC_SDI
-				GPAMUX2_GPIO17_SPISOMIA |	// GAIN_SDO
-				GPAMUX2_GPIO18_SPICLKA |	// SCLK
-				GPAMUX2_GPIO19_GPIO |		// M_PWM_SCS (output)
-				GPAMUX2_GPIO28_GPIO |		// FAULT* (OC input)
-				GPAMUX2_GPIO29_GPIO;		// OCTW* (OC input)
-
-	GPBMUX1 =	GPBMUX1_GPIO32_GPIO |		// connected to GPIO16
-				GPBMUX1_GPIO33_GPIO |		// connected to GPIO17
-				GPBMUX1_GPIO34_GPIO |		// S1.1
-				GPBMUX1_GPIO35_GPIO |		// internal
-				GPBMUX1_GPIO36_GPIO |		// internal
-				GPBMUX1_GPIO37_GPIO |		// internal
-				GPBMUX1_GPIO38_GPIO;		// internal
-
-	GPASET = 	0;
-	GPBSET = 	0;
-
-	GPADIR =	GPADIR_OUTPUT(0) |			// PWM_AH / D2
-				GPADIR_OUTPUT(1) |			// PWM_AL / D4
-				GPADIR_OUTPUT(2) |			// PWM_BH / D3
-				GPADIR_OUTPUT(3) |			// PWM_BL / D5
-				GPADIR_OUTPUT(4) |			// PWM_CH
-				GPADIR_OUTPUT(5) |			// PWM_CL
-				GPADIR_OUTPUT(6) |			// EN_GATE (output)
-				GPADIR_OUTPUT(7) |			// DC_CAL (output)
-				GPADIR_OUTPUT(8) |			// internal
-				GPADIR_OUTPUT(9) |  		// internal
-				GPADIR_OUTPUT(10) | 		// internal
-				GPADIR_OUTPUT(11) | 		// internal
-				GPADIR_INPUT(12) | 			// S3
-				GPADIR_OUTPUT(13) | 		// internal
-				GPADIR_OUTPUT(14) | 		// internal
-				GPADIR_OUTPUT(15) | 		// internal
-				GPADIR_OUTPUT(16) | 		// M_OC_SDI
-				GPADIR_INPUT(17)  | 		// GAIN_SDO
-				GPADIR_OUTPUT(18) | 		// SCLK
-				GPADIR_OUTPUT(19) | 		// M_PWM_SCS (output)
-				GPADIR_OUTPUT(20) | 		// internal
-				GPADIR_OUTPUT(21) | 		// internal
-				GPADIR_OUTPUT(22) | 		// internal
-				GPADIR_OUTPUT(23) | 		// internal
-				GPADIR_OUTPUT(24) | 		// internal
-				GPADIR_OUTPUT(25) | 		// internal
-				GPADIR_OUTPUT(26) | 		// internal
-				GPADIR_OUTPUT(27) | 		// internal
-				GPADIR_INPUT(28)  | 		// FAULT* (OC input)
-				GPADIR_INPUT(29)  | 		// OCTW* (OC input)
-				GPADIR_OUTPUT(30) | 		// internal
-				GPADIR_OUTPUT(31);  		// internal
-
-	GPBDIR =	GPBDIR_INPUT(32) |			// connected to GPIO16
-				GPBDIR_INPUT(33) |			// connected to GPIO17
-				GPBDIR_INPUT(34) |			// S1.1
-				GPBDIR_OUTPUT(35) |			// internal
-				GPBDIR_OUTPUT(36) |			// internal
-				GPBDIR_INPUT(37)  |			// internal
-				GPBDIR_INPUT(38);			// internal
-
-	GPAPUD = 	GPAPUD_DISABLE(0) 	| 		// PWM_AH / D2
-				GPAPUD_DISABLE(1) 	|   	// PWM_AL / D4
-				GPAPUD_DISABLE(2) 	|   	// PWM_BH / D3
-				GPAPUD_DISABLE(3) 	|   	// PWM_BL / D5
-				GPAPUD_DISABLE(4) 	|   	// PWM_CH
-				GPAPUD_DISABLE(5) 	|   	// PWM_CL
-				GPAPUD_DISABLE(6) 	|		// EN_GATE (output)
-				GPAPUD_DISABLE(7) 	|		// DC_CAL (output)
-				GPAPUD_DISABLE(8)	|		// internal
-				GPAPUD_DISABLE(9)	|		// internal
-				GPAPUD_DISABLE(10)	|		// internal
-				GPAPUD_DISABLE(11)	|		// internal
-				GPAPUD_DISABLE(12)	|		// S3
-				GPAPUD_DISABLE(13)	|		// internal
-				GPAPUD_DISABLE(14)	|		// internal
-				GPAPUD_DISABLE(15)  |		// internal
-				GPAPUD_DISABLE(16)  |		// M_OC_SDI
-				GPAPUD_DISABLE(17)  |		// GAIN_SDO
-				GPAPUD_DISABLE(18)	|		// SCLK
-				GPAPUD_DISABLE(19)  |		// M_PWM_SCS (output)
-				GPAPUD_DISABLE(20)	|		// internal
-				GPAPUD_DISABLE(21)	|		// internal
-				GPAPUD_DISABLE(22)	|		// internal
-				GPAPUD_DISABLE(23)	|		// internal
-				GPAPUD_DISABLE(24)	|		// internal
-				GPAPUD_DISABLE(25)	|		// internal
-				GPAPUD_DISABLE(26)	|		// internal
-				GPAPUD_DISABLE(27)	|		// internal
-				GPAPUD_ENABLE(28)	|		// FAULT* (OC input)
-				GPAPUD_ENABLE(29)	|		// OCTW* (OC input)
-				GPAPUD_DISABLE(30)	|		// internal
-				GPAPUD_DISABLE(31);			// internal
-
-	GPBPUD =	GPBPUD_DISABLE(32)  |	 	// connected to GPIO16
-				GPBPUD_DISABLE(33)  |		// connected to GPIO17
-				GPBPUD_DISABLE(34)  |		// S1.1
-				GPBPUD_DISABLE(35)  |		// internal
-				GPBPUD_DISABLE(36)  |		// internal
-				GPBPUD_DISABLE(37)  |		// internal
-				GPBPUD_DISABLE(38);			// internal
-
-	GPIOXINT1SEL = GPIOXINTSEL_GPIO(12);
-	PIE_IVT[IV_XINT1] = s3_button_isr;
-	PIEIER1 = PIEIER_INT4;
-	XINT1CR = XINTCR_POLARITY_BOTH | XINTCR_INTERRUPT_ENABLE;
-
-	PCLKCR0 = 	PCLKCR0_SCIAENCLK_DISABLE |
-				PCLKCR0_SPIAENCLK_ENABLE |
-				PCLKCR0_I2CAENCLK_DISABLE |
-				PCLKCR0_ADCENCLK_DISABLE |
-				PCLKCR0_TBCLKSYNC_ENABLE |
-				PCLKCR0_HRPWMENCLK_DISABLE;
-
-	SPICCR = 	SPICCR_RESET_ENABLE |
-				SPICCR_CLOCK_POLARITY_RISING |
-				SPICCR_SPILBK_DISABLE |
-				SPICCR_CHARLEN(16);
-	SPICTL =	SPICTL_OVERRUN_DISABLE |
-				SPICTL_CLOCK_PHASE_NORMAL |
-				SPICTL_MODE_MASTER |
-				SPICTL_TALK_DISABLE |
-				SPICTL_INT_DISABLE;
-
-	SPIPRI = 	SPIPRI_SUSPEND_FREERUN |
-				SPIPRI_STEINV_ACTIVELOW |
-				SPIPRI_TRIWIRE_DISABLE;
-
-	SPIBRR = 5;	// SPI SCLK = 10MHz when LOSPCP=div1, and SYSCLOCK = 60MHz
-	SPICCR = 	(SPICCR & SPICCR_RESET_MASK) |SPICCR_RESET_ENABLE;
-
-}
 
 int main(void)
 {
@@ -313,9 +164,17 @@ int main(void)
 	EDIS();
 	ERTM();
 	EINT();
-
+	volatile uint16_t z;
 	while( 1 )
 	{
+		GPACLEAR = GPA_MASK(19);
+		SPITXBUF = DRV8301_COMAMND(READ,STATUS2,0);
+		while( SPIFFRX & SPIFFRX_RXFIFO_STATUS_MASK )
+		{
+			z = SPIRXBUF;
+		}
+		GPASET = GPA_MASK(19);
+
 	}
 }
 
