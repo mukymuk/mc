@@ -367,18 +367,39 @@ extern cregister volatile unsigned int IER;
 #define GPB_MASK(io)				((uint32_t)1<<((io)-32))
 
 
-#define GPACTRL						RA32(0x6F80)	// GPIO A Control Register (GPIO0-GPIO31)
+#define GPACTRL						RA32(0x6F80)	// GPIO A Control Register (GPIO0-GPIO31) 
+
 													
 // TODO:  GPACTRL bitfields
 
 #define GPAQSEL1 					RA32(0x6F82)	// GPIO A Qualifier Select 1 Register (GPIO0-GPIO15)
-													
-// TODO:  GPAQSEL1 bitfields
+													// Select input qualification type for GPIO0 to GPIO15. The input qualification of each GPIO
+													// input is controlled by two bits as shown in Figure 57
+										
+#define GPQSEL_SYSCLKOUT			0				// Synchronize to SYSCLKOUT only. Valid for both peripheral and GPIO pins.
+#define GPQSEL_3					1				// Qualification using 3 samples. Valid for pins configured as GPIO or a peripheral function.
+													// The time between samples is specified in the GPACTRL register.
+#define GPQSEL_6					2				// Qualification using 6 samples. Valid for pins configured as GPIO or a peripheral function.
+													// The time between samples is specified in the GPACTRL register.
+#define GPQSEL_ASYNC				3				// Asynchronous. (no synchronization or qualification). This option applies to pins configured
+													// as peripherals only. If the pin is configured as a GPIO input, then this option is the same as
+													// 0,0 or synchronize to SYSCLKOUT.
+
+#define GPAQSEL1_GPIO(gpio,mode)	((uint32_t)(mode))<<((gpio)*2)	// GPIO0-GPIO15
  													
 #define GPAQSEL2 					RA32(0x6F84)	// GPIO A Qualifier Select 2 Register (GPIO16-GPIO31)
+													// Select input qualification type for GPIO16 to GPIO31. The input qualification of each GPIO
+													// input is controlled by two bits as shown in Figure 58.
+#define GPAQSEL2_GPIO(gpio,mode)	((uint32_t)(mode))<<(((gpio)-16)*2)	// GPIO16-GPIO31
 													
-// TODO:  GPAQSEL2 bitfields
-													
+#define GPBQSEL1					RA32(0x006F92)	// GPIO B Qualifier Select 1 Register (GPIO32 to 38)
+													// Select input qualification type for GPIO32 to GPIO38 . The input qualification of each GPIO
+													// input is controlled by two bits as shown in Figure 59.
+
+
+#define GPBQSEL1_GPIO(gpio,mode)	(mode)<<(((gpio)-32)*2)	// GPIO32-GPIO38
+
+
 #define GPAMUX1 					RA32(0x6F86)	// GPIO A MUX 1 Register (GPIO0-GPIO15)
 
 #define GPAMUX1_GPIO12_MASK			(3<<24)
@@ -471,9 +492,6 @@ extern cregister volatile unsigned int IER;
 													
 #define GPBCTRL 					RA32(0x6F90)	// GPIO B Control Register (GPIO32-GPIO38)
 
-// TODO:  GPBCTRL bitfields
-
-#define GPBQSEL1 					RA32(0x6F92)	// GPIO B Qualifier Select 1 Register (GPIO32-GPIO38)
 #define GPBMUX1 					RA32(0x6F96)	// GPIO B MUX 1 Register (GPIO32-GPIO38)
 
 #define GPBMUX1_GPIO38_MASK			(3<<12)

@@ -167,13 +167,14 @@ int main(void)
 	volatile uint16_t z;
 	while( 1 )
 	{
-		GPACLEAR = GPA_MASK(19);
+		//GPACLEAR = GPA_MASK(19);
+		SPITXBUF = DRV8301_COMAMND(READ,STATUS1,0);
 		SPITXBUF = DRV8301_COMAMND(READ,STATUS2,0);
 		while( SPIFFRX & SPIFFRX_RXFIFO_STATUS_MASK )
 		{
 			z = SPIRXBUF;
 		}
-		GPASET = GPA_MASK(19);
+		//GPASET = GPA_MASK(19);
 
 	}
 }
