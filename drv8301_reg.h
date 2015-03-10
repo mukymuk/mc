@@ -6,8 +6,6 @@
 #define DRV8301_ADDRESS_MASK			0x7800
 #define DRV8301_DATA_MASK				0x07FF
 
-#define DRV8301_COMAMND(rw,reg,data)	(DRV8301_##rw|DRV8301_##reg|(data))
-
 // registers
 #define DRV8301_STATUS1					(0x0<<11)	// Status Register 1
 #define DRV8301_STATUS2					(0x1<<11)	// Status Register 2 
