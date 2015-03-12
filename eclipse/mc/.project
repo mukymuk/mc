@@ -31,11 +31,6 @@
 			<location>C:/cygwin/home/Shawn/c2000/mc/trunk/F28027F.cmd</location>
 		</link>
 		<link>
-			<name>TMS320F28027_xds100v2.ccxml</name>
-			<type>1</type>
-			<location>C:/cygwin/home/Shawn/c2000/mc/trunk/TMS320F28027_xds100v2.ccxml</location>
-		</link>
-		<link>
 			<name>drv8301.c</name>
 			<type>1</type>
 			<location>C:/cygwin/home/Shawn/c2000/mc/trunk/drv8301.c</location>
